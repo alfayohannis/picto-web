@@ -1,0 +1,28 @@
+h2 {
+	font: 14px Arial, sans-serif;
+	color: #fff;
+	padding: 10px;
+	text-align: center;
+}
+
+.editor {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.executeButton{
+	width: 10px;
+	height: 10px;
+	float: left;
+	margin:  4px 4px 0 0;
+	border-color: none;
+	cursor: pointer;
+	background: url('images/run.png');
+}
+
+.executeButton:hover {
+  background: url('images/run-hover.png');
+}
