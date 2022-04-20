@@ -1,5 +1,5 @@
 # docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto picto
-
+# docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
 #FROM openjdk:18-ea-11-jdk-alpine3.15
 FROM openjdk:11-jre-slim-bullseye
 WORKDIR /program/picto
