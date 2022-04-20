@@ -3,10 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Web
 Bundle-SymbolicName: org.eclipse.epsilon.picto.web
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: org.eclipse.epsilon.picto.web,
+ org.eclipse.epsilon.picto.web.test
 Automatic-Module-Name: org.eclipse.epsilon.picto.web
-Export-Package: epsilon.web.picto,
- org.eclipse.epsilon.picto.web
-Require-Bundle: org.eclipse.epsilon.emf.dt,
- org.eclipse.epsilon.eol.dt,
- org.eclipse.epsilon.common.dt
+Bundle-RequiredExecutionEnvironment: JavaSE-11
