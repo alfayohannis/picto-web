@@ -17,23 +17,25 @@ public class PictoController {
 //		return "greeting";
 //	}
 
-	@MessageMapping("/picto")
+	@MessageMapping("/treeview")
 	@SendTo("/topic/picto")
-	public PictoResult execute(PictoRequest message) throws Exception {
-//		Thread.sleep(1000); // simulated delay
-		WebFlexmiSource source = new WebFlexmiSource(null);
-		String result = source.getResult(message.getCode());
-//		String temp = HtmlUtils.htmlEscape(result);
+	public PictoResponse execute(PictoRequest message) throws Exception {
+		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(null);
+		String result = source.getViewTree(message.getCode());
 		String temp = result;
-		PictoResult pictoResult = new PictoResult(temp);
-		return pictoResult;
+		PictoResponse pictoResponse = new PictoResponse(temp);
+		pictoResponse.setType("TreeView");
+		return pictoResponse;
 	}
-
-//	@GetMapping("/")
-//	public String main(@RequestParam(name = "name", required = false, defaultValue = "World") String name,
-//			Model model) {
-//		model.addAttribute("name", name);
-//		return "main";
-//	}
+	
+	@MessageMapping("/foldertree")
+	@SendTo("/topic/picto")
+	public PictoResponse getProjectTree(PictoRequest message) throws Exception {
+		
+		String temp = "";
+		PictoResponse pictoResponse = new PictoResponse(temp);
+		pictoResponse.setType("ProjectTree");
+		return pictoResponse;
+	}
 
 }

@@ -2,165 +2,141 @@
 <html>
 
 <head>
-	<title>Web Picto</title>
-	<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="/main.css" rel="stylesheet">
-	<link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
-	<link type="text/css" rel="stylesheet" href="css/goldenlayout-dark-theme.css" />
-	<script src="/webjars/jquery/jquery.min.js"></script>
-	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
-	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
-	<script src="/app.js"></script>
-	<script src="js/goldenlayout.js"></script>
-	<script type="text/javascript" src="js/ace.js" charset="utf-8"></script>
+  <title>Web Picto</title>
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-dark-theme.css" />
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="js/goldenlayout.js"></script>
+  <script type="text/javascript" src="js/ace.js" charset="utf-8"></script>
+  <script type="text/javascript" src="/app.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
 
-	<!-- <template type="text/html">
-		<div class="chooseColor">
-			<div class="selectedColor"></div>
-			<ul>
-				<li style="background: #014FA1"></li>
-				<li style="background: #1D84BD"></li>
-				<li style="background: #EEEEEE"></li>
-				<li style="background: #F15C25"></li>
-				<li style="background: #EB0506"></li>
-			</ul>
-		</div>
-	</template> -->
 </head>
 
 <body>
-	<script type="text/javascript">
-		var config = {
-			content: [{
-				type: 'row',
-				content: [{
-					type: 'component',
-					componentName: 'Visualization',
-					componentState: {
-						label: 'A'
-					}
-				}, {
-					type: 'column',
-					content: [{
-						type: 'component',
-						componentName: 'Code',
-						componentState: {
-							label: 'B'
-						}
-					}, {
-						type: 'component',
-						componentName: 'Tree',
-						componentState: {
-							label: 'C'
-						}
-					}]
-				}]
-			}]
-		};
+  <script type="text/javascript">
 
-		var myLayout = new GoldenLayout(config);
+    /*** GOLDEN LAYOUT ***/
+    var config = {
+      content: [{
+        type: 'row',
+        content: [{
+          type: 'component',
+          componentName: 'Visualization',
+          componentState: {
+            label: 'A'
+          }
+        }, {
+          type: 'column',
+          content: [{
+            type: 'component',
+            componentName: 'Code',
+            componentState: {
+              label: 'B'
+            }
+          }, {
+            type: 'component',
+            componentName: 'Tree',
+            componentState: {
+              label: 'C'
+            }
+          }]
+        }]
+      }]
+    };
 
-		myLayout.registerComponent('Visualization', function (container,
-			componentState) {
-			container.getElement()
-				.html('<svg id="visualization" class="visualization" width="900" height="600" role="img" xmlns="http://www.w3.org/2000/svg"></svg>');
-		});
+    var myLayout = new GoldenLayout(config);
 
-		myLayout.registerComponent('Code', function (container, componentState) {
+    myLayout.registerComponent('Visualization', function (container,
+      componentState) {
+      container.getElement()
+        //.html('<svg id="visualization" class="visualization" width="900" height="600" role="img" xmlns="http://www.w3.org/2000/svg"></svg>');
+        .html('<div id="visualization" class="visualization"></div>');
+    });
 
-			var x = container.getElement()
-				.html('<div id="editor" class="editor"></div>')
-		});
+    myLayout.registerComponent('Code', function (container, componentState) {
+      var x = container.getElement()
+        .html('<div id="editor" class="editor"></div>')
+    });
 
-		myLayout.registerComponent('Tree', function (container, componentState) {
-			container.getElement()
-				.html('<h2>' + componentState.label + '</h2>');
-		});
-
-
-		/// Callback for every created stack
-		myLayout.on('stackCreated', function (stack) {
-
-		var executeButton = document.createElement("div");
-		executeButton.setAttribute("id", "executeButton");
-    executeButton.setAttribute("class", "executeButton");
-    executeButton.setAttribute("onclick", "executeCode()");
-
-		stack.header.controlsContainer.prepend(executeButton);
-
-		});
-
-		myLayout.on('initialised', function (stack) {
-			editor = ace.edit("editor");
-			editor.setTheme("ace/theme/eclipse");
-			editor.session.setMode("ace/mode/xml");
-			editor.setFontSize("1rem");
-			editor.setOptions({
-				fontSize: "11pt"
-				,useSoftTabs: true
-			});
-			editor.setValue('<?nsuri socialnetwork?>\n' +
-		            '<?render-egx picto/socialnetwork.egx?>\n' +
-		            '<socialnetwork>\n' +
-		            '  <person name="Alice" likes="Bob, Charlie"/>\n' +
-		            '  <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>\n' +
-		            '  <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>\n' +
-		            '  <person name="Dawn" likes="Bob" dislikes="Fred"/>\n' +
-		            '  <person name="Enid" likes="Charlie" dislikes="Alice"/>\n' +
-		            '  <person name="Fred" dislikes="Bob" likes="Enid, Alice"/>\n' +
-		            '</socialnetwork>');
-
-			//editor.getSession().on('change', function() {
-			//updateFlexmiEditorSyntaxHighlighting(flexmiEditor);
-			//});
-
-		});
+    myLayout.registerComponent('Tree', function (container, componentState) {
+      container.getElement()
+        .html('<input type="text" id="searchText" name="searchText"></input>' +
+          '<div id="tree" class="tree">A</div>');
+    });
 
 
-		myLayout.init();
-	</script>
+    /// Callback for every created stack
+    myLayout.on('stackCreated', function (stack) {
+
+      var executeButton = document.createElement("div");
+      executeButton.setAttribute("id", "executeButton");
+      executeButton.setAttribute("class", "executeButton");
+      executeButton.setAttribute("onclick", "executeCode()");
+
+      stack.header.controlsContainer.prepend(executeButton);
+
+    });
+
+    myLayout.on('initialised', function (stack) {
+
+      /*** ACE Editor ***/
+      editor = ace.edit("editor");
+      editor.setTheme("ace/theme/eclipse");
+      editor.session.setMode("ace/mode/xml");
+      editor.setFontSize("1rem");
+      editor.setOptions({
+        fontSize: "11pt"
+        , useSoftTabs: true
+      });
+      editor.setValue('<?nsuri socialnetwork?>\n' +
+        '<?render-egx picto/socialnetwork.egx?>\n' +
+        '<socialnetwork>\n' +
+        '  <person name="Alice" likes="Bob, Charlie"/>\n' +
+        '  <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>\n' +
+        '  <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>\n' +
+        '  <person name="Dawn" likes="Bob" dislikes="Fred"/>\n' +
+        '  <person name="Enid" likes="Charlie" dislikes="Alice"/>\n' +
+        '  <person name="Fred" dislikes="Bob" likes="Enid, Alice"/>\n' +
+        '</socialnetwork>');
+
+      //editor.getSession().on('change', function() {
+      //updateFlexmiEditorSyntaxHighlighting(flexmiEditor);
+      //});
+
+      $('#tree').jstree({
+        'core': {
+          'data': [
+            {
+              "text": "Root node", "children": [
+                {"text": "Child node 1"},
+                {"text": "Child node 2"}
+              ]
+            }
+          ]
+        },
+        'plugins': ['search']
+      });
+
+      var to = false;
+      $('#searchText').keyup(function () {
+        if (to) {clearTimeout(to);}
+        to = setTimeout(function () {
+          var v = $('#searchText').val();
+          console.log(v);
+          $('#tree').jstree(true).search(v, false, true);
+        }, 250);
+      });
 
 
-	<!-- 
-<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
-    enabled. Please enable
-    Javascript and reload this page!</h2></noscript>
-<div id="main-content" class="container">
-    <div class="row">
-        <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="name">What is your name?</label>
-                    <input type="text" id="name" class="form-control" placeholder="Your name here...">
-                </div>
-                <button id="send" class="btn btn-default" type="submit">Send</button>
-            </form>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <table id="conversation" class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Greetings</th>
-                </tr>
-                </thead>
-                <tbody id="greetings">
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div> -->
+    });
+    myLayout.init();
+  </script>
 </body>
 
 </html>

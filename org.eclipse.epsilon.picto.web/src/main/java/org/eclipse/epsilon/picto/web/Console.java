@@ -10,7 +10,7 @@ public class Console {
 		
 		File modelFile = new File("socialnetwork.flexmi");
 		
-		WebFlexmiSource source = new WebFlexmiSource(modelFile);
+		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(modelFile);
 		
 		System.out.println("Finished!");
 	}

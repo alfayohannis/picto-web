@@ -64,7 +64,7 @@ function editorsToJson() {
 
 function executeCode() {
   console.log("Execute Code ...");
-  stompClient.send("/app/picto", {}, editorsToJson());
+  stompClient.send("/app/treeview", {}, editorsToJson());
   console.log("Code sent.");
 }
 
