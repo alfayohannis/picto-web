@@ -4,6 +4,7 @@
   <person name="Alice" likes="Bob, Charlie"/>
   <person name="Bob" likes="Bob" dislikes="Alice"/>
   <person name="Charlie" likes="Bob"/>
-  <person name="COCA" likes="Bob"/>
-  <person name="Dean" dislikes="Bob" likes="Alice"         />
+  <person name="Kompas1" likes="Bob"/>
+  <person name="Data" likes="Bob, Alice"/>
+  <person name="Dean" dislikes="Bob" likes="Alice" />
 </socialnetwork>               

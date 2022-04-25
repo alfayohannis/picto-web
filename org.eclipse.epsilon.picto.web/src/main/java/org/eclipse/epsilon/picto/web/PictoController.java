@@ -7,7 +7,9 @@ import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.converter.ObjectToStringHttpMessageConverter;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class PictoController {
 
-	public static final String WORKSPACE = "../workspace/";
+	public static final String WORKSPACE = ".."+ File.separator + "workspace" + File.separator;
 	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
 
 	@Autowired
@@ -63,9 +65,8 @@ public class PictoController {
 	
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-//		String prefix = getBrokerRegistry().getUserDestinationPrefix();
-//		messaging.setUserDestinationPrefix("/topic/picto");
-		messaging.convertAndSend("/topic/picto", pictoResponse.toString().getBytes());
+		messaging.setMessageConverter(new MappingJackson2MessageConverter());
+		messaging.convertAndSend("/topic/picto", pictoResponse);
 
 		return pictoResponse;
 	}
