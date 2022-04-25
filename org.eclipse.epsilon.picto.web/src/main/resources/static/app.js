@@ -52,19 +52,32 @@ $(function() {
 
 /*** PICTO ****/
 
-var editor = null; 
+var editor = null;
 
-function editorsToJson() {
+function convertToPictoRequest(type, message) {
   return JSON.stringify(
     {
-      "code": editor.getValue()
+      "type": type,
+      "code": message
     }
   );
 }
 
 function executeCode() {
-  console.log("Execute Code ...");
-  stompClient.send("/app/treeview", {}, editorsToJson());
+  console.log("Get TreeView ...");
+  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", editor.getValue()));
+  console.log("Code sent.");
+}
+
+function projectTree() {
+  console.log("Get Project Tree ...");
+  stompClient.send("/app/projecttree", {}, convertToPictoRequest("ProjectTree", ""));
+  console.log("Code sent.");
+}
+
+function openFile(filename) {
+  console.log("Open File ...");
+  stompClient.send("/app/openfile", {}, convertToPictoRequest("OpenFile", filename));
   console.log("Code sent.");
 }
 
@@ -79,25 +92,66 @@ function connectToServer() {
     setConnected(true);
     console.log('Connected: ' + frame);
     stompClient.subscribe('/topic/picto', function(picto) {
-      var xml = JSON.parse(picto.body).content;
-      // console.log(xml);
-      var parser = new DOMParser();
-      var xmlDoc = parser.parseFromString(xml, "text/xml");
-      var svg = xmlDoc.getElementsByTagName("svg")[0];
-      var svgStr = new XMLSerializer().serializeToString(svg);
-      console.log(svgStr);
-      // console.log(container.innerHTML);
+      console.log(picto);
+      console.log(picto.body);
+      var json = JSON.parse(picto.body);
 
-      var container = document.getElementById("visualization");
-      container.innerHTML = svgStr;
-      // '<svg height="30" width="200">' +
-      // '<text x="0" y="15" fill="red">I love SVG!</text>' +
-      // 'Sorry, your browser does not support inline SVG.' +
-      // '</svg>';
-      // container.children.append(svg);
-      // console.log(container.innerHTML);
-      // showGreeting(JSON.parse(picto.body).content);
+      if (json.type == 'TreeView') {
+        var xml = json.content;
+        // console.log(xml);
+        var parser = new DOMParser();
+        var xmlDoc = parser.parseFromString(xml, "text/xml");
+        var svg = xmlDoc.getElementsByTagName("svg")[0];
+        var svgStr = new XMLSerializer().serializeToString(svg);
+        console.log(svgStr);
+
+        var container = document.getElementById("visualization");
+        container.innerHTML = svgStr;
+      }
+      else if (json.type == 'ProjectTree') {
+        //console.log(json.content);
+        var jsonTree = JSON.parse(json.content);
+        console.log(jsonTree);
+        var x = {
+          'core': {
+            'data': jsonTree
+          },
+           "plugins" : [ "search" ]
+        };
+        console.log(x);
+        $('#project').jstree(x);
+
+        $('#project').bind("dblclick.jstree", function(event) {
+          var node = $(event.target).closest("li");
+          if (node[0] != null) {
+            var temp = node[0].innerText.split(/\r?\n/);
+            if (temp.length == 1) {
+              var filename = node[0].innerText;
+              console.log(filename);
+              openFile(filename);
+            }
+          }
+        });
+        
+        var to = false;
+        $('#searchText').keyup(function() {
+          if (to) { clearTimeout(to); }
+          to = setTimeout(function() {
+            var v = $('#searchText').val();
+            console.log(v);
+            $('#project').jstree(true).search(v, false, true);
+          }, 250);
+        });
+      }
+      else if (json.type == 'OpenFile') {
+        console.log(json.content);
+        editor.setValue(json.content);
+      }
     });
+
+    // get all files in a project
+    projectTree();
+
   });
 }
 

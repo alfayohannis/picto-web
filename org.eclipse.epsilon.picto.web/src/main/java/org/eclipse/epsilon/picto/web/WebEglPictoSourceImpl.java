@@ -44,7 +44,7 @@ public class WebEglPictoSourceImpl extends WebEglPictoSource {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
 		Resource resource = resourceSet
-				.createResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getName()));
+				.createResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()));
 		try {
 			resource.load(null);
 			return resource;

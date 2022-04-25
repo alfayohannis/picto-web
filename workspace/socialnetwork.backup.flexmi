@@ -1,7 +1,7 @@
 <?nsuri socialnetwork?>
 <?render-egx picto/socialnetwork.egx?>
 <socialnetwork>
-  <person name="Alice" likes="Bob, Charlie"/>
+  <person name="Alice" likes="Bob, Alice"/>
   <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>
   <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>
   <person name="Dawn" likes="Bob" dislikes="Fred"/>

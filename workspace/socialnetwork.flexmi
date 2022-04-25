@@ -1,0 +1,9 @@
+<?nsuri socialnetwork?>
+<?render-egx picto/socialnetwork.egx?>
+<socialnetwork>
+  <person name="Alice" likes="Bob, Charlie"/>
+  <person name="Bob" likes="Bob" dislikes="Alice"/>
+  <person name="Charlie" likes="Bob"/>
+  <person name="COCA" likes="Bob"/>
+  <person name="Dean" dislikes="Bob" likes="Alice"         />
+</socialnetwork>               

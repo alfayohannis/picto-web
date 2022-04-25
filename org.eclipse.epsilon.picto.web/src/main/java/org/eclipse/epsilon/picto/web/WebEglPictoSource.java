@@ -26,6 +26,7 @@ import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
@@ -57,21 +58,28 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 	}
 	
 	public String getViewTree(String code) throws Exception {
+		int x = code.indexOf("\n");
+		String nsuri = code.substring(0, x);
+		nsuri = nsuri.replace("<?", "");
+		nsuri = nsuri.replace("?>", "");
+		nsuri = nsuri.replace("nsuri", "").trim() + ".flexmi";
+
+		
+		if (modelFile == null) {
+			modelFile = new File(PictoController.WORKSPACE + nsuri);
+			Files.write(code.getBytes(), modelFile);
+		}
+		return this.getViewTree(modelFile);
+	}
+	
+	public String getViewTree(File modelFile) throws Exception {
+		this.modelFile = modelFile;
 		Resource resource = null;
 		ViewTree viewTree = new ViewTree();
+		String metamodelFile = null;
 		try {
-			int x = code.indexOf("\n");
-			String nsuri = code.substring(0, x);
-			nsuri = nsuri.replace("<?", "");
-			nsuri = nsuri.replace("?>", "");
-			nsuri = nsuri.replace("nsuri", "").trim() + ".flexmi";
-
-			String metamodelFile = null;
-			if (modelFile == null) {
-				modelFile = new File(nsuri);
-				Files.write(code.getBytes(), modelFile);
-			}
-			metamodelFile = modelFile.getName();
+			
+			metamodelFile = modelFile.getAbsolutePath();
 			String extension = metamodelFile.substring(metamodelFile.lastIndexOf("."), metamodelFile.length());
 			metamodelFile = metamodelFile.replace(extension, ".ecore");
 			List<EPackage> ePackages = EmfUtil.register(org.eclipse.emf.common.util.URI.createFileURI(metamodelFile),
@@ -138,8 +146,8 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 				context.getModelRepository().addModel(model);
 
 			for (Model pictoModel : renderingMetadata.getModels()) {
-				model = loadModel(pictoModel, code);
-//				model = loadModel(pictoModel, modelFile);
+//				model = loadModel(pictoModel, code);
+				model = loadModel(pictoModel, modelFile);
 				if (model != null)
 					models.add(model);
 			}
@@ -383,6 +391,24 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 	}
 
+	protected IModel loadModel(Model model, File baseFile) throws Exception {
+		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+		m.setName(model.getName());
+		m.setReadOnLoad(true);
+		m.setStoredOnDisposal(false);
+		StringProperties properties = new StringProperties();
+		IRelativePathResolver relativePathResolver = relativePath ->
+			new File(baseFile.getParentFile(), relativePath).getAbsolutePath();
+		
+		for (Parameter parameter : model.getParameters()) {
+			properties.put(parameter.getName(), parameter.getFile() != null ?
+					relativePathResolver.resolve(parameter.getFile()) : parameter.getValue()
+			);
+		}
+		m.load(properties, relativePathResolver);
+		return m;
+	}
+	
 	protected IModel loadModel(Model model, String code) throws Exception {
 		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
 		m.setName(model.getName());

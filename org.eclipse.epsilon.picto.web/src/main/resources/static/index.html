@@ -26,11 +26,20 @@
       content: [{
         type: 'row',
         content: [{
-          type: 'component',
-          componentName: 'Visualization',
-          componentState: {
-            label: 'A'
-          }
+          type: 'column',
+          content: [{
+            type: 'component',
+            componentName: 'Visualization',
+            componentState: {
+              label: 'A'
+            }
+          }, {
+            type: 'component',
+            componentName: 'Tree',
+            componentState: {
+              label: 'C'
+            }
+          }]
         }, {
           type: 'column',
           content: [{
@@ -41,9 +50,9 @@
             }
           }, {
             type: 'component',
-            componentName: 'Tree',
+            componentName: 'Project',
             componentState: {
-              label: 'C'
+              label: 'D'
             }
           }]
         }]
@@ -66,9 +75,15 @@
 
     myLayout.registerComponent('Tree', function (container, componentState) {
       container.getElement()
-        .html('<input type="text" id="searchText" name="searchText"></input>' +
-          '<div id="tree" class="tree">A</div>');
+        .html('<div id="tree" class="tree"></div>');
     });
+
+    myLayout.registerComponent('Project', function (container, componentState) {
+      container.getElement()
+        .html('<input type="text" id="searchText" name="searchText"></input>' +
+          '<div id="project" class="project"></div>');
+    });
+
 
 
     /// Callback for every created stack
@@ -78,6 +93,7 @@
       executeButton.setAttribute("id", "executeButton");
       executeButton.setAttribute("class", "executeButton");
       executeButton.setAttribute("onclick", "executeCode()");
+      //executeButton.setAttribute("onclick", "projectTree()");
 
       stack.header.controlsContainer.prepend(executeButton);
 
@@ -94,45 +110,20 @@
         fontSize: "11pt"
         , useSoftTabs: true
       });
-      editor.setValue('<?nsuri socialnetwork?>\n' +
-        '<?render-egx picto/socialnetwork.egx?>\n' +
-        '<socialnetwork>\n' +
-        '  <person name="Alice" likes="Bob, Charlie"/>\n' +
-        '  <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>\n' +
-        '  <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>\n' +
-        '  <person name="Dawn" likes="Bob" dislikes="Fred"/>\n' +
-        '  <person name="Enid" likes="Charlie" dislikes="Alice"/>\n' +
-        '  <person name="Fred" dislikes="Bob" likes="Enid, Alice"/>\n' +
-        '</socialnetwork>');
+      //editor.setValue('<?nsuri socialnetwork?>\n' +
+      //  '<?render-egx picto/socialnetwork.egx?>\n' +
+      //  '<socialnetwork>\n' +
+      //  '  <person name="Alice" likes="Bob, Charlie"/>\n' +
+      //  '  <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>\n' +
+      //  '  <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>\n' +
+      //  '  <person name="Dawn" likes="Bob" dislikes="Fred"/>\n' +
+      //  '  <person name="Enid" likes="Charlie" dislikes="Alice"/>\n' +
+      //  '  <person name="Fred" dislikes="Bob" likes="Enid, Alice"/>\n' +
+      //  '</socialnetwork>');
 
       //editor.getSession().on('change', function() {
       //updateFlexmiEditorSyntaxHighlighting(flexmiEditor);
       //});
-
-      $('#tree').jstree({
-        'core': {
-          'data': [
-            {
-              "text": "Root node", "children": [
-                {"text": "Child node 1"},
-                {"text": "Child node 2"}
-              ]
-            }
-          ]
-        },
-        'plugins': ['search']
-      });
-
-      var to = false;
-      $('#searchText').keyup(function () {
-        if (to) {clearTimeout(to);}
-        to = setTimeout(function () {
-          var v = $('#searchText').val();
-          console.log(v);
-          $('#tree').jstree(true).search(v, false, true);
-        }, 250);
-      });
-
 
     });
     myLayout.init();
