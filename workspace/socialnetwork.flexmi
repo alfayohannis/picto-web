@@ -2,9 +2,7 @@
 <?render-egx picto/socialnetwork.egx?>
 <socialnetwork>
   <person name="Alice" likes="Bob, Charlie"/>
-  <person name="Bob" likes="Bob" dislikes="Alice"/>
-  <person name="Charlie" likes="Bob"/>
-  <person name="Kompas1" likes="Bob"/>
-  <person name="Data" likes="Bob, Alice"/>
-  <person name="Dean" dislikes="Bob" likes="Alice" />
+  <person name="Bob" likes="Bob, Charlie" dislikes="Alice"/>
+  <person name="Charlie" likes="Bob, Charlie"/>
+  <person name="Dannnnnnnn" likes="Bob, Alice, Charlie"/>
 </socialnetwork>               

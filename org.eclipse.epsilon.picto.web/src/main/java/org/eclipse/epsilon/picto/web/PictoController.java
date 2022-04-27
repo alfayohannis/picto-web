@@ -44,14 +44,14 @@ public class PictoController {
 //	}
 
 	@MessageMapping("/treeview")
-	@SendTo("/topic/picto")
-	public PictoResponse execute(PictoRequest message) throws Exception {
+//	@SendTo("/topic/picto")
+	public void execute(PictoRequest message) throws Exception {
 		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(null);
-		String result = source.getViewTree(message.getCode());
-		String temp = result;
-		PictoResponse pictoResponse = new PictoResponse(temp);
-		pictoResponse.setType("TreeView");
-		return pictoResponse;
+		source.getViewTree(message.getCode());
+//		String temp = source.getViewTree(message.getCode());
+//		PictoResponse pictoResponse = new PictoResponse(temp);
+//		pictoResponse.setType("TreeView");
+//		return pictoResponse;
 	}
 
 	@MessageMapping("/gs-guide-websocket") 

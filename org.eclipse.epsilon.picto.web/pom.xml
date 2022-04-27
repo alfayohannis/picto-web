@@ -145,16 +145,16 @@
       <artifactId>org.eclipse.epsilon.eol.dt</artifactId>
       <version>2.5.0</version>
     </dependency>
-    <dependency>
+    <!--<dependency>
       <groupId>org.eclipse.ui</groupId>
       <artifactId>org.eclipse.ui.workbench</artifactId>
       <version>3.123.0</version>
-    </dependency>
-    <dependency>
+    </dependency>-->
+    <!--<dependency>
       <groupId>org.eclipse.epsilon</groupId>
       <artifactId>org.eclipse.epsilon.picto</artifactId>
       <version>2.5.0</version>
-    </dependency>
+    </dependency>-->
     <!-- FROM LOCAL REPOSITORY -->
 
   </dependencies>

@@ -45,6 +45,7 @@ import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 
 public abstract class WebEglPictoSource extends EglPictoSource {
@@ -56,7 +57,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 //		modelFile = new File(modelFile.getAbsolutePath());
 		this.modelFile = modelFile;
 	}
-	
+
 	public String getViewTree(String code) throws Exception {
 		int x = code.indexOf("\n");
 		String nsuri = code.substring(0, x);
@@ -64,21 +65,20 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		nsuri = nsuri.replace("?>", "");
 		nsuri = nsuri.replace("nsuri", "").trim() + ".flexmi";
 
-		
 		if (modelFile == null) {
 			modelFile = new File(PictoController.WORKSPACE + nsuri);
 			Files.write(code.getBytes(), modelFile);
 		}
 		return this.getViewTree(modelFile);
 	}
-	
+
 	public String getViewTree(File modelFile) throws Exception {
 		this.modelFile = modelFile;
 		Resource resource = null;
 		ViewTree viewTree = new ViewTree();
 		String metamodelFile = null;
 		try {
-			
+
 			metamodelFile = modelFile.getAbsolutePath();
 			String extension = metamodelFile.substring(metamodelFile.lastIndexOf("."), metamodelFile.length());
 			metamodelFile = metamodelFile.replace(extension, ".ecore");
@@ -315,19 +315,18 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 					ViewContent vc = vt.getContent();
 //					System.out.println(vc.getText());
 
-					GraphvizContentTransformer transformer = new GraphvizContentTransformer();
-					if (transformer.canTransform(vc)) {
-						ViewContent vc2 = transformer.transform(vc, null);
-						String text = vc2.getText();
-						System.out.println(text);
-						return text;
-					}
+//					GraphvizContentTransformer transformer = new GraphvizContentTransformer();
+//					if (transformer.canTransform(vc)) {
+//						ViewContent vc2 = transformer.transform(vc, null);
+//						String text = vc2.getText();
+//						System.out.println(text);
+//						return text;
+//					}
 
 					System.console();
 				}
 
-			}
-			else {
+			} else {
 				String content = module.execute() + "";
 				viewTree = new ViewTree();
 				viewTree.setPromise(new StaticContentPromise(content));
@@ -381,14 +380,42 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 			}
 
 			viewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
-//			
-//			return viewTree;
-		}
-		else {
-			viewTree = createEmptyViewTree();
-		}
-		return null;
 
+			// remove promises to allow serialization to json
+			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
+			String json = new ObjectMapper().writeValueAsString(jsonViewTree);
+			return json;
+//			return viewTree;
+		} else {
+			viewTree = createEmptyViewTree();
+			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
+			String json = new ObjectMapper().writeValueAsString(jsonViewTree);
+			return json;
+		}
+//		return null;
+
+	}
+
+	protected JsonViewTree generateJsonViewTree(ViewTree viewTree) {
+		JsonViewTree root = new JsonViewTree();
+		copyViewTreeToJsonViewTree(viewTree, root);
+		return root;
+	}
+
+	protected void copyViewTreeToJsonViewTree(ViewTree viewTree, JsonViewTree jsonViewTree) {
+		for (ViewTree child : viewTree.getChildren()) {
+			JsonViewTree jsonChild = new JsonViewTree();
+			jsonViewTree.getChildren().add(jsonChild);
+			copyViewTreeToJsonViewTree(child, jsonChild);
+		}
+		JsonViewContent jvc = new JsonViewContent();
+		jvc.setFormat(viewTree.getContent().getFormat());
+		jvc.setText(viewTree.getContent().getText());
+		jvc.setLabel(viewTree.getContent().getLabel());
+		jsonViewTree.setContent(jvc);
+		jsonViewTree.setName(viewTree.getName());
+		jsonViewTree.setIcon(viewTree.getIcon());
+		jsonViewTree.setPosition(viewTree.getPosition());
 	}
 
 	protected IModel loadModel(Model model, File baseFile) throws Exception {
@@ -397,18 +424,18 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		m.setReadOnLoad(true);
 		m.setStoredOnDisposal(false);
 		StringProperties properties = new StringProperties();
-		IRelativePathResolver relativePathResolver = relativePath ->
-			new File(baseFile.getParentFile(), relativePath).getAbsolutePath();
-		
+		IRelativePathResolver relativePathResolver = relativePath -> new File(baseFile.getParentFile(), relativePath)
+				.getAbsolutePath();
+
 		for (Parameter parameter : model.getParameters()) {
-			properties.put(parameter.getName(), parameter.getFile() != null ?
-					relativePathResolver.resolve(parameter.getFile()) : parameter.getValue()
-			);
+			properties.put(parameter.getName(),
+					parameter.getFile() != null ? relativePathResolver.resolve(parameter.getFile())
+							: parameter.getValue());
 		}
 		m.load(properties, relativePathResolver);
 		return m;
 	}
-	
+
 	protected IModel loadModel(Model model, String code) throws Exception {
 		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
 		m.setName(model.getName());
@@ -427,5 +454,5 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 //		m.load(properties, relativePathResolver);
 		return m;
 	}
-	
+
 }

@@ -75,7 +75,8 @@
 
     myLayout.registerComponent('Tree', function (container, componentState) {
       container.getElement()
-        .html('<div id="tree" class="tree"></div>');
+        .html('<input type="text" id="searchTree" name="searchTree"></input>' +
+          '<div id="tree" class="tree"></div>');
     });
 
     myLayout.registerComponent('Project', function (container, componentState) {
@@ -110,21 +111,7 @@
         fontSize: "11pt"
         , useSoftTabs: true
       });
-      //editor.setValue('<?nsuri socialnetwork?>\n' +
-      //  '<?render-egx picto/socialnetwork.egx?>\n' +
-      //  '<socialnetwork>\n' +
-      //  '  <person name="Alice" likes="Bob, Charlie"/>\n' +
-      //  '  <person name="Bob" likes="Enid, Alice" dislikes="Fred, Charlie"/>\n' +
-      //  '  <person name="Charlie" likes="Fred, Alice" dislikes="Dawn, Enid"/>\n' +
-      //  '  <person name="Dawn" likes="Bob" dislikes="Fred"/>\n' +
-      //  '  <person name="Enid" likes="Charlie" dislikes="Alice"/>\n' +
-      //  '  <person name="Fred" dislikes="Bob" likes="Enid, Alice"/>\n' +
-      //  '</socialnetwork>');
-
-      //editor.getSession().on('change', function() {
-      //updateFlexmiEditorSyntaxHighlighting(flexmiEditor);
-      //});
-
+     
     });
     myLayout.init();
   </script>

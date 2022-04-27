@@ -1,6 +1,6 @@
 var stompClient = null;
 
-function setConnected(connected) {
+/*function setConnected(connected) {
   $("#connect").prop("disabled", connected);
   $("#disconnect").prop("disabled", !connected);
   if (connected) {
@@ -47,12 +47,13 @@ $(function() {
   $("#connect").click(function() { connect(); });
   $("#disconnect").click(function() { disconnect(); });
   $("#send").click(function() { sendName(); });
-});
+});*/
 
 
 /*** PICTO ****/
 
 var editor = null;
+var treeView = null;
 
 function convertToPictoRequest(type, message) {
   return JSON.stringify(
@@ -85,20 +86,89 @@ function displayResult(message) {
   $("#greetings").append("<tr><td>" + message + "</td></tr>");
 }
 
+function createTree(treeView) {
+  var tree = [];
+  tree = recursiveTree(tree, treeView);
+  return tree;
+}
+
+function recursiveTree(tree, treeView) {
+  for (key in treeView.children) {
+    var child = treeView.children[key];
+    var object = {};
+    tree.push(object);
+    object['text'] = child['name'];
+    object['state'] = { "opened": true };
+    object['children'] = [];
+    recursiveTree(object['children'], child);
+  }
+  return tree;
+}
+
+function getViewPath(data) {
+  var path = '/';
+  var node = data.instance.get_node(data.selected[0]);
+  path = path + node.text;
+  while (node.parent != '#') {
+    path = path + '/';
+    var parent = data.instance.get_node(node.parent);
+    path = path + parent.text;
+    node = parent;
+  }
+  return path;
+}
+
 function connectToServer() {
   var socket = new SockJS('/gs-guide-websocket');
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function(frame) {
-    setConnected(true);
+    //setConnected(true);
     console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/picto', function(picto) {
-      console.log(picto);
-      console.log(picto.body);
-      var json = JSON.parse(picto.body);
+    stompClient.subscribe('/topic/picto', function(message) {
+      //console.log(message);
+      //console.log(message.body);
+      var json = JSON.parse(message.body);
 
+      // TreeView
       if (json.type == 'TreeView') {
-        var xml = json.content;
-        // console.log(xml);
+
+        var treeView = JSON.parse(json.content);
+        console.log(json.content);
+        console.log(treeView);
+
+        var tree = createTree(treeView);
+
+        var x = {
+          'core': {
+            'data': tree
+          },
+          "plugins": ["search"]
+        };
+        console.log(x);
+        $('#tree').on("select_node.jstree", function(e, data) {
+          if (data.selected.length) {
+            var path = getViewPath(data);
+            console.log(path);
+          }
+        }).jstree(x);
+
+        $('#tree').bind("dblclick.jstree", function(event) {
+          var text = event.target.outerText;
+          console.log(text);
+        });
+
+        var to = false;
+        $('#searchTree').keyup(function() {
+          if (to) { clearTimeout(to); }
+          to = setTimeout(function() {
+            var v = $('#searchTree').val();
+            console.log(v);
+            $('#tree').jstree(true).search(v, false, true);
+          }, 250);
+        });
+
+
+        /*// console.log(xml);
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(xml, "text/xml");
         var svg = xmlDoc.getElementsByTagName("svg")[0];
@@ -106,8 +176,10 @@ function connectToServer() {
         console.log(svgStr);
 
         var container = document.getElementById("visualization");
-        container.innerHTML = svgStr;
+        container.innerHTML = svgStr;*/
       }
+
+      //ProjectTree
       else if (json.type == 'ProjectTree') {
         //console.log(json.content);
         var jsonTree = JSON.parse(json.content);
@@ -116,7 +188,7 @@ function connectToServer() {
           'core': {
             'data': jsonTree
           },
-           "plugins" : [ "search" ]
+          "plugins": ["search"]
         };
         console.log(x);
         $('#project').jstree(x);
@@ -132,7 +204,7 @@ function connectToServer() {
             }
           }
         });
-        
+
         var to = false;
         $('#searchText').keyup(function() {
           if (to) { clearTimeout(to); }

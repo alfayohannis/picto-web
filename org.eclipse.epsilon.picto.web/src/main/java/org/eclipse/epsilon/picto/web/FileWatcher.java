@@ -37,7 +37,7 @@ public class FileWatcher extends Thread {
 
 	public FileWatcher(PictoController pictoController) {
 		this.pictoController = pictoController;
-		this.setName(FileWatcher.class.getSimpleName());	
+		this.setName(FileWatcher.class.getSimpleName());
 	}
 
 	public void terminate() {
@@ -66,6 +66,7 @@ public class FileWatcher extends Thread {
 			isRunning = true;
 
 			while (isRunning) {
+				
 				WatchKey key;
 				try {
 					key = watcher.take();
@@ -80,7 +81,7 @@ public class FileWatcher extends Thread {
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
 					Path filePath = ev.context();
 
-					if (kind == ENTRY_MODIFY && filePath.toString().endsWith(".flexmi")) {
+					if (filePath.toString().endsWith(".flexmi")) {
 						System.out.println("Picto: " + filePath + " has changed!!!");
 
 						File modelFile = new File(PictoController.WORKSPACE + filePath.toString());
@@ -93,6 +94,8 @@ public class FileWatcher extends Thread {
 					System.out.println("Picto: FileWatcher is not valid anymore!");
 					break;
 				}
+
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

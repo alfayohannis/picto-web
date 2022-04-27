@@ -7,16 +7,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
 import org.eclipse.epsilon.common.dt.util.LogUtil;
-import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
-import org.eclipse.epsilon.picto.dom.Model;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoFactory;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.epsilon.picto.dummy.IEditorPart;
 
 public class WebEglPictoSourceImpl extends WebEglPictoSource {
 
