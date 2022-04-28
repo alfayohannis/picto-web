@@ -54,6 +54,8 @@ $(function() {
 
 var editor = null;
 var treeView = null;
+var selectedPath = null;
+var viewContents = new Map();
 
 function convertToPictoRequest(type, message) {
   return JSON.stringify(
@@ -88,11 +90,12 @@ function displayResult(message) {
 
 function createTree(treeView) {
   var tree = [];
-  tree = recursiveTree(tree, treeView);
+  path = '';
+  tree = recursiveTree(tree, treeView, path);
   return tree;
 }
 
-function recursiveTree(tree, treeView) {
+function recursiveTree(tree, treeView, path) {
   for (key in treeView.children) {
     var child = treeView.children[key];
     var object = {};
@@ -100,22 +103,47 @@ function recursiveTree(tree, treeView) {
     object['text'] = child['name'];
     object['state'] = { "opened": true };
     object['children'] = [];
-    recursiveTree(object['children'], child);
+    var p = path + "/" + object['text'];
+    if (selectedPath == null)
+      selectedPath = p;
+    viewContents.set(p, child.content);
+    recursiveTree(object['children'], child, p);
   }
   return tree;
 }
 
-function getViewPath(data) {
-  var path = '/';
+function getSelectedViewPath(data) {
+  var path = '';
   var node = data.instance.get_node(data.selected[0]);
   path = path + node.text;
   while (node.parent != '#') {
-    path = path + '/';
+    path = '/' + path;
     var parent = data.instance.get_node(node.parent);
-    path = path + parent.text;
+    path = parent.text + path;
     node = parent;
   }
+  path = '/' + path;
   return path;
+}
+
+function render(path) {
+  var container = document.getElementById("visualization");
+  container.innerHTML = '';
+  var fragment;
+  var viewContent = viewContents.get(path);
+  if (viewContent.format == 'svg') {
+    var text = viewContent.text;
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(text, "text/xml");
+    fragment = xmlDoc.getElementsByTagName("svg")[0];
+    container.appendChild(fragment);
+  } else if (viewContent.format == 'html') {
+    var text = viewContent.text;
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(text, "text/xml");
+    fragment = xmlDoc.getElementsByTagName("body")[0];
+    container.innerHTML = fragment.innerHTML;
+  }
 }
 
 function connectToServer() {
@@ -136,19 +164,21 @@ function connectToServer() {
         console.log(json.content);
         console.log(treeView);
 
-        var tree = createTree(treeView);
+        var jsTreeTree = createTree(treeView);
 
         var x = {
           'core': {
-            'data': tree
+            'data': jsTreeTree
           },
           "plugins": ["search"]
         };
         console.log(x);
         $('#tree').on("select_node.jstree", function(e, data) {
           if (data.selected.length) {
-            var path = getViewPath(data);
+            var path = getSelectedViewPath(data);
+            selectedPath = path;
             console.log(path);
+            render(path);
           }
         }).jstree(x);
 
@@ -167,16 +197,15 @@ function connectToServer() {
           }, 250);
         });
 
+        render(selectedPath);
 
-        /*// console.log(xml);
-        var parser = new DOMParser();
-        var xmlDoc = parser.parseFromString(xml, "text/xml");
-        var svg = xmlDoc.getElementsByTagName("svg")[0];
-        var svgStr = new XMLSerializer().serializeToString(svg);
-        console.log(svgStr);
-
-        var container = document.getElementById("visualization");
-        container.innerHTML = svgStr;*/
+        /*for (var entry of viewContents.entries()) {
+          console.log(entry);
+        }*/
+        /*for (var entry of viewContents.entries()) {
+          xml = entry[1];
+          break;
+        }*/
       }
 
       //ProjectTree

@@ -32,7 +32,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 public class ExternalContentTransformation implements Runnable, Callable<byte[]> {
 
 	protected final String program, args[];
-	protected Duration timeout = Duration.ofSeconds(5000);
+	protected Duration timeout = null;
 	protected Path logFile, outputFile;
 	private IOException exception;
 	protected int resultCode = Integer.MIN_VALUE;
@@ -53,7 +53,8 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		
 //		EpsilonCommonsPlugin plugin = EpsilonCommonsPlugin.getDefault();
 //		if (plugin != null) {
-//			IPreferenceStore preferenceStore = plugin.getPreferenceStore();
+			timeout = Duration.ofSeconds(5);
+////			IPreferenceStore preferenceStore = plugin.getPreferenceStore();
 //			timeout = Duration.ofSeconds(preferenceStore.isDefault(PictoPreferencePage.TIMEOUT) ? 
 //				PictoPreferencePage.DEFAULT_TIMEOUT : preferenceStore.getInt(PictoPreferencePage.TIMEOUT)
 //			);

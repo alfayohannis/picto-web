@@ -4,5 +4,5 @@
   <person name="Alice" likes="Bob, Charlie"/>
   <person name="Bob" likes="Bob, Charlie" dislikes="Alice"/>
   <person name="Charlie" likes="Bob, Charlie"/>
-  <person name="Dannnnnnnn" likes="Bob, Alice, Charlie"/>
-</socialnetwork>               
+  <person name="Kuda" likes="Bob, Alice, Charlie"/>
+</socialnetwork>

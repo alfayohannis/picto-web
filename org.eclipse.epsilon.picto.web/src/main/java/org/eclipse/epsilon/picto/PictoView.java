@@ -16,7 +16,7 @@ public class PictoView extends ViewPart {
 	
 	public static final String ID = "org.eclipse.epsilon.picto.PictoView";
 
-	protected ViewRenderer viewRenderer;
+	protected ViewRenderer viewRenderer = new ViewRenderer(null);
 	
 	public ViewRenderer getViewRenderer() {
 		return viewRenderer;

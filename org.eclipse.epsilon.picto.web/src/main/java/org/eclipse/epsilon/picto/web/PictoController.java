@@ -27,6 +27,7 @@ public class PictoController {
 	public static final String WORKSPACE = ".."+ File.separator + "workspace" + File.separator;
 	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
 
+
 	@Autowired
 	private ApplicationContext context;
 	

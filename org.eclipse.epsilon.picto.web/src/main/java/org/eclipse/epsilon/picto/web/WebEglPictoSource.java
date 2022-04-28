@@ -30,6 +30,7 @@ import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
+import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.ResourceLoadingException;
@@ -43,7 +44,11 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
+import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
+import org.eclipse.epsilon.picto.transformers.SvgContentTransformer;
+import org.eclipse.epsilon.picto.transformers.TextContentTransformer;
+import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
@@ -51,11 +56,17 @@ import com.google.common.io.Files;
 public abstract class WebEglPictoSource extends EglPictoSource {
 
 	protected File modelFile;
+	public static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
 
 	public WebEglPictoSource(File modelFile) throws Exception {
 
 //		modelFile = new File(modelFile.getAbsolutePath());
 		this.modelFile = modelFile;
+
+		TRANSFORMERS.add(new GraphvizContentTransformer());
+		TRANSFORMERS.add(new SvgContentTransformer());
+		TRANSFORMERS.add(new TextContentTransformer());
+		TRANSFORMERS.add(new CsvContentTransformer());
 	}
 
 	public String getViewTree(String code) throws Exception {
@@ -75,8 +86,10 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 	public String getViewTree(File modelFile) throws Exception {
 		this.modelFile = modelFile;
 		Resource resource = null;
-		ViewTree viewTree = new ViewTree();
 		String metamodelFile = null;
+		PictoView pictoView = new PictoView();
+		ViewTree viewTree = new ViewTree();
+		
 		try {
 
 			metamodelFile = modelFile.getAbsolutePath();
@@ -313,8 +326,14 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 //					System.out.println(output);
 //					
 					ViewContent vc = vt.getContent();
-//					System.out.println(vc.getText());
-
+					for (ViewContentTransformer transformer : TRANSFORMERS) {
+						if (transformer.canTransform(vc)) {
+							vc = transformer.transform(vc, pictoView);
+							vt.setContent(vc);
+							break;
+						}
+					}
+					
 //					GraphvizContentTransformer transformer = new GraphvizContentTransformer();
 //					if (transformer.canTransform(vc)) {
 //						ViewContent vc2 = transformer.transform(vc, null);
