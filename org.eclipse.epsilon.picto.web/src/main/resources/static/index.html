@@ -12,9 +12,9 @@
   <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
   <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
   <script type="text/javascript" src="js/goldenlayout.js"></script>
-  <script type="text/javascript" src="js/ace.js" charset="utf-8"></script>
-  <script type="text/javascript" src="/app.js"></script>
+  <script type="text/javascript" src="js/marked.min.js"></script>
   <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/app.js"></script>
 
 </head>
 
@@ -23,36 +23,29 @@
 
     /*** GOLDEN LAYOUT ***/
     var config = {
-      content: [{
+      content: [
+      {
         type: 'row',
-        content: [{
+        content: [
+        {
+          componentName: 'LeftColumn',
+          width: 30,
           type: 'column',
           content: [{
-            type: 'component',
-            componentName: 'Visualization',
-            componentState: {
-              label: 'A'
-            }
-          }, {
             type: 'component',
             componentName: 'Tree',
             componentState: {
               label: 'C'
             }
           }]
-        }, {
+        },
+        {
           type: 'column',
           content: [{
             type: 'component',
-            componentName: 'Code',
+            componentName: 'Visualization',
             componentState: {
-              label: 'B'
-            }
-          }, {
-            type: 'component',
-            componentName: 'Project',
-            componentState: {
-              label: 'D'
+              label: 'A'
             }
           }]
         }]
@@ -61,16 +54,16 @@
 
     var myLayout = new GoldenLayout(config);
 
+    myLayout.registerComponent('LeftColumn', function (container,
+      componentState) {
+        container.setSize(50,50);
+    });
+    
     myLayout.registerComponent('Visualization', function (container,
       componentState) {
       container.getElement()
         //.html('<svg id="visualization" class="visualization" width="900" height="600" role="img" xmlns="http://www.w3.org/2000/svg"></svg>');
         .html('<div id="visualization" class="visualization"></div>');
-    });
-
-    myLayout.registerComponent('Code', function (container, componentState) {
-      var x = container.getElement()
-        .html('<div id="editor" class="editor"></div>')
     });
 
     myLayout.registerComponent('Tree', function (container, componentState) {
@@ -79,11 +72,11 @@
           '<div id="tree" class="tree"></div>');
     });
 
-    myLayout.registerComponent('Project', function (container, componentState) {
+    /*myLayout.registerComponent('Project', function (container, componentState) {
       container.getElement()
         .html('<input type="text" id="searchText" name="searchText"></input>' +
-          '<div id="project" class="project"></div>');
-    });
+          '<div id="project" class="project"></div>');      
+    });*/
 
 
 
@@ -93,26 +86,20 @@
       var executeButton = document.createElement("div");
       executeButton.setAttribute("id", "executeButton");
       executeButton.setAttribute("class", "executeButton");
-      executeButton.setAttribute("onclick", "executeCode()");
+      //executeButton.setAttribute("onclick", "executeCode()");
       //executeButton.setAttribute("onclick", "projectTree()");
 
       stack.header.controlsContainer.prepend(executeButton);
 
     });
-
+    
     myLayout.on('initialised', function (stack) {
-
-      /*** ACE Editor ***/
-      editor = ace.edit("editor");
-      editor.setTheme("ace/theme/eclipse");
-      editor.session.setMode("ace/mode/xml");
-      editor.setFontSize("1rem");
-      editor.setOptions({
-        fontSize: "11pt"
-        , useSoftTabs: true
-      });
-     
+      //console.log("ALFA:");
+      //var leftColumn = myLayout.getComponent("LeftColumn");
+      //leftColumn.setSize(20,20);
+      //console.log(x);
     });
+    
     myLayout.init();
   </script>
 </body>

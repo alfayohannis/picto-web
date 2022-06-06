@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.internal.registry.ConfigurationElementHandle;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
@@ -18,6 +20,8 @@ import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
+import org.eclipse.epsilon.egl.dom.GenerationRule;
+import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.IEolModule;
@@ -46,6 +50,8 @@ import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
+import org.eclipse.epsilon.picto.transformers.HtmlContentTransformer;
+import org.eclipse.epsilon.picto.transformers.MarkdownContentTransformer;
 import org.eclipse.epsilon.picto.transformers.SvgContentTransformer;
 import org.eclipse.epsilon.picto.transformers.TextContentTransformer;
 import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
@@ -57,6 +63,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 	protected File modelFile;
 	public static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
+	private List<EPackage> ePackages = new ArrayList<>();
 
 	public WebEglPictoSource(File modelFile) throws Exception {
 
@@ -67,6 +74,8 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		TRANSFORMERS.add(new SvgContentTransformer());
 		TRANSFORMERS.add(new TextContentTransformer());
 		TRANSFORMERS.add(new CsvContentTransformer());
+		TRANSFORMERS.add(new HtmlContentTransformer());
+		TRANSFORMERS.add(new MarkdownContentTransformer());
 	}
 
 	public String getViewTree(String code) throws Exception {
@@ -83,22 +92,23 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		return this.getViewTree(modelFile);
 	}
 
-	public String getViewTree(File modelFile) throws Exception {
-		this.modelFile = modelFile;
+	public String getViewTree(File sourceModelFile) throws Exception {
+		this.modelFile = sourceModelFile;
 		Resource resource = null;
-		String metamodelFile = null;
 		PictoView pictoView = new PictoView();
 		ViewTree viewTree = new ViewTree();
-		
-		try {
 
-			metamodelFile = modelFile.getAbsolutePath();
-			String extension = metamodelFile.substring(metamodelFile.lastIndexOf("."), metamodelFile.length());
-			metamodelFile = metamodelFile.replace(extension, ".ecore");
-			List<EPackage> ePackages = EmfUtil.register(org.eclipse.emf.common.util.URI.createFileURI(metamodelFile),
-					EPackage.Registry.INSTANCE);
+		try {
+			
+			
+			if (PictoApplication.PICTO_FILE.getAbsolutePath().endsWith(".model.picto")) {
+				this.modelFile = new File(
+						PictoApplication.PICTO_FILE.getAbsolutePath().replace(".model.picto", ".model"));
+				loadMetamodel(PictoApplication.PICTO_FILE.getName().replace(".model.picto", ""));
+			} else if (PictoApplication.PICTO_FILE.getAbsolutePath().endsWith("-standalone.picto")) {
+				loadMetamodel(PictoApplication.PICTO_FILE.getName().replace("-standalone.picto", ""));
+			}
 			resource = getResource(null);
-			System.console();
 		} catch (Exception ex) {
 			throw new ResourceLoadingException(ex);
 		}
@@ -169,13 +179,27 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 			if ("egx".equals(renderingMetadata.getFormat())) {
 
+//				LazyEgxModule lazyEgxModule = (LazyEgxModule) module;
+//				for (GenerationRule generationRule : lazyEgxModule.getGenerationRules()) {
+//					LazyGenerationRule lazyGenerationRule = (LazyGenerationRule) generationRule;
+//					if (lazyGenerationRule.getSourceParameter() != null) {
+//						org.eclipse.epsilon.eol.dom.Parameter parameter = lazyGenerationRule.getSourceParameter();
+//						String type = parameter.getTypeExpression().getName();
+//						String typePackage = type.split("::")[0].trim();
+//						loadMetamodel(typePackage);
+//						IModel m = context.getModelRepository().getModels().get(0);
+//						System.console();
+//					}
+//				}
+
 				@SuppressWarnings("unchecked")
 				List<LazyGenerationRuleContentPromise> instances = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
 
-				// Handle dynamic views (i.e. where type != null)
-				for (CustomView customView : renderingMetadata.getCustomViews().stream()
-						.filter(cv -> cv.getType() != null).collect(Collectors.toList())) {
+				// Handle dynamic views (i.e. where type != null)'
+				List<CustomView> customViews = renderingMetadata.getCustomViews().stream()
+						.filter(cv -> cv.getType() != null).collect(Collectors.toList());
+				for (CustomView customView : customViews) {
 
 					LazyGenerationRule generationRule = ((LazyEgxModule) module).getGenerationRules().stream()
 							.filter(r -> r.getName().equals(customView.getType()) && r instanceof LazyGenerationRule)
@@ -321,6 +345,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 					ViewTree vt = new ViewTree(instance, format, icon, position, patches, layers);
 					viewTree.add(new ArrayList<>(path), vt);
 
+					System.out.println(String.format("%s, %s, %s", vt.getName(), format, position));
 					// get the graphviz
 //					String output = instance.getContent();
 //					System.out.println(output);
@@ -333,7 +358,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 							break;
 						}
 					}
-					
+
 //					GraphvizContentTransformer transformer = new GraphvizContentTransformer();
 //					if (transformer.canTransform(vc)) {
 //						ViewContent vc2 = transformer.transform(vc, null);
@@ -402,13 +427,13 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 			// remove promises to allow serialization to json
 			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
-			String json = new ObjectMapper().writeValueAsString(jsonViewTree);
+			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
 			return json;
 //			return viewTree;
 		} else {
 			viewTree = createEmptyViewTree();
 			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
-			String json = new ObjectMapper().writeValueAsString(jsonViewTree);
+			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
 			return json;
 		}
 //		return null;
@@ -438,7 +463,17 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 	}
 
 	protected IModel loadModel(Model model, File baseFile) throws Exception {
-		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+		IModel m = null;
+		if ("EMF".equals(model.getType())) {
+			m = new EmfModel();
+			String metamodelName = (String) model.getParameters().stream()
+					.filter(p -> EmfModel.PROPERTY_METAMODEL_URI.equals(p.getName())).findFirst().orElse(null)
+					.getValue();
+//			loadMetamodel(metamodelName);
+
+		} else {
+			m = ModelTypeExtension.forType(model.getType()).createModel();
+		}
 		m.setName(model.getName());
 		m.setReadOnLoad(true);
 		m.setStoredOnDisposal(false);
@@ -474,4 +509,13 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		return m;
 	}
 
+	public List<EPackage> loadMetamodel(String metamodelName) throws Exception {
+		if (!ePackages.stream().anyMatch(p -> p.getName().equals(metamodelName))) {
+			String metamodelFile = PictoApplication.PICTO_FILE.getParentFile().getAbsolutePath() + File.separator
+					+ metamodelName + ".ecore";
+			org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createFileURI(metamodelFile);
+			ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+		}
+		return ePackages;
+	}
 }

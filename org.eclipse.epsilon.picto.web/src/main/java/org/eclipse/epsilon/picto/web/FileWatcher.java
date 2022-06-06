@@ -13,11 +13,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 
 /***
  * Monitor file changes.
@@ -64,7 +60,9 @@ public class FileWatcher extends Thread {
 			System.out.println("PICTO: Watch Service registered for dir: " + dir.getFileName());
 
 			isRunning = true;
-
+			
+//			this.notifyFileChange(PictoApplication.PICTO_FILE);
+			
 			while (isRunning) {
 				
 				WatchKey key;
@@ -75,13 +73,13 @@ public class FileWatcher extends Thread {
 				}
 
 				for (WatchEvent<?> event : key.pollEvents()) {
-					WatchEvent.Kind<?> kind = event.kind();
+//					WatchEvent.Kind<?> kind = event.kind();
 
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
 					Path filePath = ev.context();
 
-					if (filePath.toString().endsWith(".flexmi")) {
+					if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".model")) {
 						System.out.println("Picto: " + filePath + " has changed!!!");
 
 						File modelFile = new File(PictoController.WORKSPACE + filePath.toString());

@@ -10,6 +10,7 @@
 package org.eclipse.epsilon.picto;
 
 import org.eclipse.epsilon.picto.dummy.ViewPart;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 
 public class PictoView extends ViewPart {
@@ -17,9 +18,14 @@ public class PictoView extends ViewPart {
 	public static final String ID = "org.eclipse.epsilon.picto.PictoView";
 
 	protected ViewRenderer viewRenderer = new ViewRenderer(null);
+	protected TreeViewer treeViewer;
 	
 	public ViewRenderer getViewRenderer() {
 		return viewRenderer;
+	}
+	
+	public ViewTree getViewTree() {
+		return (ViewTree) treeViewer.getInput();
 	}
 	
 	@Override

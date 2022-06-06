@@ -139,6 +139,36 @@
       <artifactId>commons-csv</artifactId>
       <version>1.9.0</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-gfm-strikethrough -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-gfm-tables -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-ins -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-ins</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-yaml-front-matter -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-image-attributes -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-image-attributes</artifactId>
+      <version>0.19.0</version>
+    </dependency>
 
 
     <!-- FROM LOCAL REPOSITORY -->

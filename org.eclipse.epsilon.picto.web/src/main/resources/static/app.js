@@ -51,8 +51,6 @@ $(function() {
 
 
 /*** PICTO ****/
-
-var editor = null;
 var treeView = null;
 var selectedPath = null;
 var viewContents = new Map();
@@ -68,7 +66,8 @@ function convertToPictoRequest(type, message) {
 
 function executeCode() {
   console.log("Get TreeView ...");
-  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", editor.getValue()));
+  //stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", editor.getValue()));
+  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", ""));
   console.log("Code sent.");
 }
 
@@ -78,9 +77,16 @@ function projectTree() {
   console.log("Code sent.");
 }
 
+function getTreeView() {
+  console.log("Get Treeview ...");
+  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", ""));
+  console.log("Code sent.");
+}
+
 function openFile(filename) {
   console.log("Open File ...");
-  stompClient.send("/app/openfile", {}, convertToPictoRequest("OpenFile", filename));
+  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", filename));
+  //stompClient.send("/app/openfile", {}, convertToPictoRequest("OpenFile", filename));
   console.log("Code sent.");
 }
 
@@ -139,10 +145,19 @@ function render(path) {
     container.appendChild(fragment);
   } else if (viewContent.format == 'html') {
     var text = viewContent.text;
+    if (text.trim() == "") {
+      text = "<body></body>";
+    }
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(text, "text/xml");
     fragment = xmlDoc.getElementsByTagName("body")[0];
     container.innerHTML = fragment.innerHTML;
+  } else if (viewContent.format == 'markdown') {
+    var text = viewContent.text;
+    console.log(text);
+    var md = marked.parse(text);
+    console.log(md);
+    container.innerHTML = md;
   }
 }
 
@@ -151,8 +166,9 @@ function connectToServer() {
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function(frame) {
     //setConnected(true);
-    console.log('Connected: ' + frame);
+    console.log('PICTO - Connected to server: ' + frame);
     stompClient.subscribe('/topic/picto', function(message) {
+      console.log("PICTO - Receiving messages ... ");
       //console.log(message);
       //console.log(message.body);
       var json = JSON.parse(message.body);
@@ -161,26 +177,48 @@ function connectToServer() {
       if (json.type == 'TreeView') {
 
         var treeView = JSON.parse(json.content);
-        console.log(json.content);
-        console.log(treeView);
+        //console.log(json.content);
+        //console.log(treeView);
 
         var jsTreeTree = createTree(treeView);
 
-        var x = {
+        var tree = $.jstree.reference("#tree");
+        if (tree != null) {
+          //var gigi = tree.get_node("#");
+          //tree._model.data = null;
+          //tree.clear_buffer();
+          //tree.refresh();
+          //tree.redraw();
+          //tree.delete_node(gigi);
+          //console.log(tree);
+          tree.destroy();
+          console.log("PICTO - Destroy");
+        }
+
+        var jsTreeConfig = {
           'core': {
             'data': jsTreeTree
           },
           "plugins": ["search"]
         };
-        console.log(x);
-        $('#tree').on("select_node.jstree", function(e, data) {
+        $('#tree').jstree(jsTreeConfig);
+
+        //console.log(x);
+        $('#tree').on("select_node.jstree", function(event, data) {
           if (data.selected.length) {
             var path = getSelectedViewPath(data);
             selectedPath = path;
             console.log(path);
             render(path);
           }
-        }).jstree(x);
+        });
+
+        $('#tree').bind("ready.jstree", function(event) {
+          /*if (selectedPath != null) {
+            render(selectedPath);
+          }*/
+          console.log("PICTO - Ready");
+        });
 
         $('#tree').bind("dblclick.jstree", function(event) {
           var text = event.target.outerText;
@@ -197,6 +235,8 @@ function connectToServer() {
           }, 250);
         });
 
+
+
         render(selectedPath);
 
         /*for (var entry of viewContents.entries()) {
@@ -208,7 +248,7 @@ function connectToServer() {
         }*/
       }
 
-      //ProjectTree
+      /*//ProjectTree
       else if (json.type == 'ProjectTree') {
         //console.log(json.content);
         var jsonTree = JSON.parse(json.content);
@@ -247,11 +287,14 @@ function connectToServer() {
       else if (json.type == 'OpenFile') {
         console.log(json.content);
         editor.setValue(json.content);
-      }
+      }*/
     });
 
     // get all files in a project
-    projectTree();
+    //projectTree();
+    //executeCode("");
+    getTreeView();
+    //projectTree();
 
   });
 }

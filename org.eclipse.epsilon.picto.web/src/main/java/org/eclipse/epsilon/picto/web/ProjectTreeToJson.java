@@ -38,11 +38,14 @@ public class ProjectTreeToJson {
 	 */
 	public static String convert(String path) throws IOException {
 		List<String> paths = Files.walk(Paths.get(path)).filter(p -> !Files.isDirectory(p)).map(p -> p.toString())
-				.filter(f -> f.toLowerCase().endsWith(".ecore") || f.toLowerCase().endsWith(".emf")
-						|| f.toLowerCase().endsWith(".picto") || f.toLowerCase().endsWith(".flexmi")
-						|| f.toLowerCase().endsWith(".egx") || f.toLowerCase().endsWith(".egl")
-						|| f.toLowerCase().endsWith(".model"))
-				.collect(Collectors.toList());
+				.filter(f -> f.toLowerCase().endsWith(".picto")
+//						|| f.toLowerCase().endsWith(".ecore") 
+//						|| f.toLowerCase().endsWith(".emf")
+//						|| f.toLowerCase().endsWith(".flexmi")
+//						|| f.toLowerCase().endsWith(".egx") 
+//						|| f.toLowerCase().endsWith(".egl")
+//						|| f.toLowerCase().endsWith(".model")
+				).collect(Collectors.toList());
 
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayNode root = mapper.createArrayNode();

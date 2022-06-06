@@ -1,13 +1,12 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.converter.ObjectToStringHttpMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -24,9 +23,8 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class PictoController {
 
-	public static final String WORKSPACE = ".."+ File.separator + "workspace" + File.separator;
+	public static String WORKSPACE = null;
 	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
-
 
 	@Autowired
 	private ApplicationContext context;
@@ -34,7 +32,9 @@ public class PictoController {
 	@Autowired
 	public SimpMessagingTemplate template;
 	
-	public PictoController() throws IOException {
+	public PictoController() throws Exception {
+		PictoPackage.eINSTANCE.eClass();
+		WORKSPACE = PictoApplication.PICTO_FILE.getParentFile().getAbsolutePath() + File.separator;
 		FILE_WATCHER.start();
 	}
 
@@ -45,14 +45,14 @@ public class PictoController {
 //	}
 
 	@MessageMapping("/treeview")
-//	@SendTo("/topic/picto")
-	public void execute(PictoRequest message) throws Exception {
+	@SendTo("/topic/picto")
+	public PictoResponse  execute(PictoRequest message) throws Exception {
 		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(null);
-		source.getViewTree(message.getCode());
-//		String temp = source.getViewTree(message.getCode());
-//		PictoResponse pictoResponse = new PictoResponse(temp);
-//		pictoResponse.setType("TreeView");
-//		return pictoResponse;
+		String result = source.getViewTree(PictoApplication.PICTO_FILE);
+//		System.out.println(result);
+		PictoResponse pictoResponse = new PictoResponse(result);
+		pictoResponse.setType("TreeView");
+		return pictoResponse;
 	}
 
 	@MessageMapping("/gs-guide-websocket") 
