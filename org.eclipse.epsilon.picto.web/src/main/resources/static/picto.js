@@ -1,5 +1,3 @@
-var stompClient = null;
-
 /*function setConnected(connected) {
   $("#connect").prop("disabled", connected);
   $("#disconnect").prop("disabled", !connected);
@@ -51,57 +49,63 @@ $(function() {
 
 
 /*** PICTO ****/
-var treeView = null;
-var selectedPath = null;
-var viewContents = new Map();
+var Picto = new Object();
 
-function convertToPictoRequest(type, message) {
+Picto.pictoFile = null;
+Picto.socket = null;
+Picto.stompClient = null;
+Picto.treeView = null;
+Picto.selectedPath = null;
+Picto.viewContents = new Map();
+
+Picto.convertToPictoRequest = function(pictoFile, type, message) {
   return JSON.stringify(
     {
+      "pictoFile": pictoFile,
       "type": type,
       "code": message
     }
   );
 }
 
-function executeCode() {
+Picto.executeCode = function() {
   console.log("Get TreeView ...");
-  //stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", editor.getValue()));
-  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", ""));
+  //this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", editor.getValue()));
+  this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
   console.log("Code sent.");
 }
 
-function projectTree() {
+Picto.projectTree = function() {
   console.log("Get Project Tree ...");
-  stompClient.send("/app/projecttree", {}, convertToPictoRequest("ProjectTree", ""));
+  this.stompClient.send("/app/projecttree", {}, this.convertToPictoRequest(this.pictoFile, "ProjectTree", ""));
   console.log("Code sent.");
 }
 
-function getTreeView() {
+Picto.getTreeView = function() {
   console.log("Get Treeview ...");
-  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", ""));
+  this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
   console.log("Code sent.");
 }
 
-function openFile(filename) {
+Picto.openFile = function(filename) {
   console.log("Open File ...");
-  stompClient.send("/app/treeview", {}, convertToPictoRequest("TreeView", filename));
-  //stompClient.send("/app/openfile", {}, convertToPictoRequest("OpenFile", filename));
+  this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", filename));
+  //this.stompClient.send("/app/openfile", {}, this.convertToPictoRequest(this.pictoFile, "OpenFile", filename));
   console.log("Code sent.");
 }
 
-function displayResult(message) {
+Picto.displayResult = function(message) {
   $("#greetings").append("<tr><td>" + message + "</td></tr>");
 }
 
-function createTree(treeView) {
+Picto.createTree = function(treeView) {
   var tree = [];
   path = '';
-  tree = recursiveTree(tree, treeView, path);
+  tree = Picto.recursiveTree(tree, treeView, path);
   return tree;
 }
 
-function recursiveTree(tree, treeView, path) {
+Picto.recursiveTree = function(tree, treeView, path) {
   for (key in treeView.children) {
     var child = treeView.children[key];
     var object = {};
@@ -110,15 +114,15 @@ function recursiveTree(tree, treeView, path) {
     object['state'] = { "opened": true };
     object['children'] = [];
     var p = path + "/" + object['text'];
-    if (selectedPath == null)
-      selectedPath = p;
-    viewContents.set(p, child.content);
-    recursiveTree(object['children'], child, p);
+    if (Picto.selectedPath == null)
+      Picto.selectedPath = p;
+    Picto.viewContents.set(p, child.content);
+    Picto.recursiveTree(object['children'], child, p);
   }
   return tree;
 }
 
-function getSelectedViewPath(data) {
+Picto.getSelectedViewPath = function(data) {
   var path = '';
   var node = data.instance.get_node(data.selected[0]);
   path = path + node.text;
@@ -132,11 +136,11 @@ function getSelectedViewPath(data) {
   return path;
 }
 
-function render(path) {
+Picto.render = function(path) {
   var container = document.getElementById("visualization");
   container.innerHTML = '';
   var fragment;
-  var viewContent = viewContents.get(path);
+  var viewContent = Picto.viewContents.get(path);
   if (viewContent.format == 'svg') {
     var text = viewContent.text;
     var parser = new DOMParser();
@@ -161,13 +165,14 @@ function render(path) {
   }
 }
 
-function connectToServer() {
-  var socket = new SockJS('/gs-guide-websocket');
-  stompClient = Stomp.over(socket);
-  stompClient.connect({}, function(frame) {
+Picto.connectToServer = function(pictoFile) {
+  this.pictoFile = pictoFile;
+  this.socket = new SockJS('/gs-guide-websocket');
+  this.stompClient = Stomp.over(this.socket);
+  this.stompClient.connect({}, function(frame) {
     //setConnected(true);
     console.log('PICTO - Connected to server: ' + frame);
-    stompClient.subscribe('/topic/picto', function(message) {
+    Picto.stompClient.subscribe('/topic/picto/' + Picto.pictoFile, function(message) {
       console.log("PICTO - Receiving messages ... ");
       //console.log(message);
       //console.log(message.body);
@@ -180,7 +185,7 @@ function connectToServer() {
         //console.log(json.content);
         //console.log(treeView);
 
-        var jsTreeTree = createTree(treeView);
+        var jsTreeTree = Picto.createTree(treeView);
 
         var tree = $.jstree.reference("#tree");
         if (tree != null) {
@@ -206,10 +211,10 @@ function connectToServer() {
         //console.log(x);
         $('#tree').on("select_node.jstree", function(event, data) {
           if (data.selected.length) {
-            var path = getSelectedViewPath(data);
-            selectedPath = path;
+            var path = Picto.getSelectedViewPath(data);
+            Picto.selectedPath = path;
             console.log(path);
-            render(path);
+            Picto.render(path);
           }
         });
 
@@ -237,7 +242,7 @@ function connectToServer() {
 
 
 
-        render(selectedPath);
+        Picto.render(Picto.selectedPath);
 
         /*for (var entry of viewContents.entries()) {
           console.log(entry);
@@ -246,6 +251,13 @@ function connectToServer() {
           xml = entry[1];
           break;
         }*/
+      }
+
+      // ProjectTree
+      else if (json.type == 'ProjectTree') {
+        var jsonTree = JSON.parse(json.content);
+        console.log(jsonTree);
+        console.log("");
       }
 
       /*//ProjectTree
@@ -291,15 +303,15 @@ function connectToServer() {
     });
 
     // get all files in a project
-    //projectTree();
+    // projectTree();
     //executeCode("");
-    getTreeView();
+    Picto.getTreeView();
     //projectTree();
 
   });
 }
 
-function updateFlexmiEditorSyntaxHighlighting(editor) {
+Picto.updateFlexmiEditorSyntaxHighlighting = function(editor) {
   var val = editor.getSession().getValue();
   if ((val.trim() + "").startsWith("<")) {
     editor.getSession().setMode("ace/mode/xml");
@@ -308,6 +320,3 @@ function updateFlexmiEditorSyntaxHighlighting(editor) {
     editor.getSession().setMode("ace/mode/yaml");
   }
 }
-
-connectToServer();
-

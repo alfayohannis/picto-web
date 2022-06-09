@@ -1,7 +1,9 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,6 +17,9 @@ import org.eclipse.core.internal.registry.ConfigurationElementHandle;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
@@ -32,6 +37,7 @@ import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
+import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoView;
@@ -62,13 +68,14 @@ import com.google.common.io.Files;
 public abstract class WebEglPictoSource extends EglPictoSource {
 
 	protected File modelFile;
+	protected File pictoFile;
 	public static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
 	private List<EPackage> ePackages = new ArrayList<>();
 
-	public WebEglPictoSource(File modelFile) throws Exception {
+	public WebEglPictoSource() throws Exception {
 
-//		modelFile = new File(modelFile.getAbsolutePath());
-		this.modelFile = modelFile;
+//		this.modelFile = new File(modelFile.getAbsolutePath());
+//		this.modelFile = modelFile;
 
 		TRANSFORMERS.add(new GraphvizContentTransformer());
 		TRANSFORMERS.add(new SvgContentTransformer());
@@ -76,6 +83,22 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		TRANSFORMERS.add(new CsvContentTransformer());
 		TRANSFORMERS.add(new HtmlContentTransformer());
 		TRANSFORMERS.add(new MarkdownContentTransformer());
+	}
+
+	public File getModelFile() {
+		return modelFile;
+	}
+
+	public void setModelFile(File modelFile) {
+		this.modelFile = modelFile;
+	}
+
+	public File getPictoFile() {
+		return pictoFile;
+	}
+
+	public void setPictoFile(File pictoFile) {
+		this.pictoFile = pictoFile;
 	}
 
 	public String getViewTree(String code) throws Exception {
@@ -86,29 +109,27 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		nsuri = nsuri.replace("nsuri", "").trim() + ".flexmi";
 
 		if (modelFile == null) {
-			modelFile = new File(PictoController.WORKSPACE + nsuri);
+			modelFile = new File(PictoApplication.WORKSPACE + nsuri);
 			Files.write(code.getBytes(), modelFile);
 		}
 		return this.getViewTree(modelFile);
 	}
 
-	public String getViewTree(File sourceModelFile) throws Exception {
-		this.modelFile = sourceModelFile;
+	public String getViewTree(File pictoFile) throws Exception {
+		this.pictoFile = pictoFile;
 		Resource resource = null;
 		PictoView pictoView = new PictoView();
 		ViewTree viewTree = new ViewTree();
 
 		try {
-			
-			
-			if (PictoApplication.PICTO_FILE.getAbsolutePath().endsWith(".model.picto")) {
-				this.modelFile = new File(
-						PictoApplication.PICTO_FILE.getAbsolutePath().replace(".model.picto", ".model"));
-				loadMetamodel(PictoApplication.PICTO_FILE.getName().replace(".model.picto", ""));
-			} else if (PictoApplication.PICTO_FILE.getAbsolutePath().endsWith("-standalone.picto")) {
-				loadMetamodel(PictoApplication.PICTO_FILE.getName().replace("-standalone.picto", ""));
+			if (this.pictoFile.getAbsolutePath().endsWith(".model.picto")) {
+				this.modelFile = new File(this.pictoFile.getAbsolutePath().replace(".model.picto", ".model"));
+				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				resource = getResource(this.modelFile);
+			} else if (this.pictoFile.getAbsolutePath().endsWith("-standalone.picto")) {
+				this.modelFile = this.pictoFile;
+				loadMetamodel(this.pictoFile.getName().replace("-standalone.picto", ""));
 			}
-			resource = getResource(null);
 		} catch (Exception ex) {
 			throw new ResourceLoadingException(ex);
 		}
@@ -144,7 +165,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 			}
 
 			IEolContext context = module.getContext();
-			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
+//			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
 
 			FrameStack fs = context.getFrameStack();
 			for (Parameter customParameter : renderingMetadata.getParameters()) {
@@ -463,31 +484,36 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 	}
 
 	protected IModel loadModel(Model model, File baseFile) throws Exception {
-		IModel m = null;
-		if ("EMF".equals(model.getType())) {
-			m = new EmfModel();
-			String metamodelName = (String) model.getParameters().stream()
-					.filter(p -> EmfModel.PROPERTY_METAMODEL_URI.equals(p.getName())).findFirst().orElse(null)
-					.getValue();
+//		IModel m = null;
+//		if ("EMF".equals(model.getType())) {
+//			m = new EmfModel();
+//			String metamodelName = (String) model.getParameters().stream()
+//					.filter(p -> EmfModel.PROPERTY_METAMODEL_URI.equals(p.getName())).findFirst().orElse(null)
+//					.getValue();
 //			loadMetamodel(metamodelName);
-
-		} else {
-			m = ModelTypeExtension.forType(model.getType()).createModel();
-		}
-		m.setName(model.getName());
-		m.setReadOnLoad(true);
-		m.setStoredOnDisposal(false);
-		StringProperties properties = new StringProperties();
+//		} else {
+//			m = ModelTypeExtension.forType(model.getType()).createModel();
+//		}
+//		m.setName(model.getName());
+//		m.setReadOnLoad(true);
+//		m.setStoredOnDisposal(false);
+//		StringProperties properties = new StringProperties();
 		IRelativePathResolver relativePathResolver = relativePath -> new File(baseFile.getParentFile(), relativePath)
 				.getAbsolutePath();
-
+		String filePath = null;
 		for (Parameter parameter : model.getParameters()) {
-			properties.put(parameter.getName(),
-					parameter.getFile() != null ? relativePathResolver.resolve(parameter.getFile())
-							: parameter.getValue());
+//			properties.put(parameter.getName(),
+//					parameter.getFile() != null ? relativePathResolver.resolve(parameter.getFile())
+//							: parameter.getValue());
+			if (parameter.getFile() != null) {
+				filePath = relativePathResolver.resolve(parameter.getFile());
+			}
 		}
-		m.load(properties, relativePathResolver);
-		return m;
+		IModel model2 = new InMemoryEmfModel("M", getResource(new File(filePath)));
+		((InMemoryEmfModel) model2).setExpand(true);
+		return model2;
+//		m.load(properties, relativePathResolver);
+//		return m;
 	}
 
 	protected IModel loadModel(Model model, String code) throws Exception {
@@ -511,11 +537,28 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 	public List<EPackage> loadMetamodel(String metamodelName) throws Exception {
 		if (!ePackages.stream().anyMatch(p -> p.getName().equals(metamodelName))) {
-			String metamodelFile = PictoApplication.PICTO_FILE.getParentFile().getAbsolutePath() + File.separator
-					+ metamodelName + ".ecore";
+			String metamodelFile = this.pictoFile.getParentFile().getAbsolutePath() + File.separator + metamodelName
+					+ ".ecore";
 			org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createFileURI(metamodelFile);
 			ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
 		}
 		return ePackages;
+	}
+
+	public Resource getResource(File modelFile) {
+		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
+		Resource resource = resourceSet
+				.getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()), true);
+//		Resource resource = resourceSet
+//				.createResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()));
+		try {
+			resource.load(null);
+			return resource;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

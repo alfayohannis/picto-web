@@ -54,17 +54,17 @@ public class FileWatcher extends Thread {
 
 			watcher = FileSystems.getDefault().newWatchService();
 
-			Path dir = Paths.get(PictoController.WORKSPACE);
+			Path dir = Paths.get(PictoApplication.WORKSPACE);
 			dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 
 			System.out.println("PICTO: Watch Service registered for dir: " + dir.getFileName());
 
 			isRunning = true;
-			
-//			this.notifyFileChange(PictoApplication.PICTO_FILE);
-			
+
+//			this.notifyFileChange(PictoApplication.PICTO_FILES);
+
 			while (isRunning) {
-				
+
 				WatchKey key;
 				try {
 					key = watcher.take();
@@ -79,10 +79,12 @@ public class FileWatcher extends Thread {
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
 					Path filePath = ev.context();
 
-					if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".model")) {
+					if (filePath.toString().endsWith(".picto")
+//							|| filePath.toString().endsWith(".model")
+					) {
 						System.out.println("Picto: " + filePath + " has changed!!!");
 
-						File modelFile = new File(PictoController.WORKSPACE + filePath.toString());
+						File modelFile = new File(PictoApplication.WORKSPACE + filePath.toString());
 						this.notifyFileChange(modelFile);
 					}
 				}
@@ -93,7 +95,6 @@ public class FileWatcher extends Thread {
 					break;
 				}
 
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

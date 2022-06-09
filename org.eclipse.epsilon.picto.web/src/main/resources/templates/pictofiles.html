@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Picto Files</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+  <h1>Picto Files</h1>
+  <ol>
+    <span th:each="pictofile: ${pictofiles}">
+      <li>
+        <a th:text="${pictofile}" target="_blank" th:href="'picto?file=' + ${pictofile}"></a>
+      </li>
+      </span>
+  </ol>
+</body>
+
+</html>

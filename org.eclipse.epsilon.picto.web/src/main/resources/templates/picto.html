@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title th:text="'Picto: ' + ${pictoName}"></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-dark-theme.css" />
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="js/goldenlayout.js"></script>
+  <script type="text/javascript" src="js/marked.min.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/picto.js"></script>
+</head>
+
+<body>
+  <script th:inline="javascript">
+    var pictoName = [[${pictoName}]];
+    
+    /*** GOLDEN LAYOUT ***/
+    var config = {
+      content: [
+        {
+          type: 'row',
+          content: [
+            {
+              componentName: 'LeftColumn',
+              width: 30,
+              type: 'column',
+              content: [{
+                type: 'component',
+                componentName: pictoName,
+                componentState: {
+                  label: 'C'
+                }
+              }]
+            },
+            {
+              type: 'column',
+              content: [{
+                type: 'component',
+                componentName: 'Visualization',
+                componentState: {
+                  label: 'A'
+                }
+              }]
+            }]
+        }]
+    };
+
+    var myLayout = new GoldenLayout(config);
+
+    myLayout.registerComponent('Visualization', function (container,
+      componentState) {
+      container.getElement()
+        //.html('<svg id="visualization" class="visualization" width="900" height="600" role="img" xmlns="http://www.w3.org/2000/svg"></svg>');
+        .html('<div id="visualization" class="visualization"></div>');
+    });
+
+    myLayout.registerComponent(pictoName, function (container, componentState) {
+      container.getElement()
+        .html('<input type="text" id="searchTree" name="searchTree"></input>' +
+          '<div id="tree" class="tree"></div>');
+    });
+
+    /*myLayout.registerComponent('Project', function (container, componentState) {
+      container.getElement()
+        .html('<input type="text" id="searchText" name="searchText"></input>' +
+          '<div id="project" class="project"></div>');      
+    });*/
+
+
+
+    /// Callback for every created stack
+    myLayout.on('stackCreated', function (stack) {
+
+      var executeButton = document.createElement("div");
+      executeButton.setAttribute("id", "executeButton");
+      executeButton.setAttribute("class", "executeButton");
+      //executeButton.setAttribute("onclick", "executeCode()");
+      //executeButton.setAttribute("onclick", "projectTree()");
+
+      stack.header.controlsContainer.prepend(executeButton);
+
+    });
+
+    myLayout.on('initialised', function (stack) {
+      //console.log("ALFA:");
+      //var leftColumn = myLayout.getComponent("LeftColumn");
+      //leftColumn.setSize(20,20);
+      //console.log(x);
+    });
+
+    myLayout.init();
+    
+    Picto.connectToServer(pictoName);
+  </script>
+</body>
+
+</html>

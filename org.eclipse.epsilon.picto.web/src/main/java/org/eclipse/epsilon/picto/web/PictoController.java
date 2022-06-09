@@ -1,11 +1,14 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -13,6 +16,13 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
 /***
  * Receive Requests and send back Responses
@@ -23,18 +33,23 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class PictoController {
 
-	public static String WORKSPACE = null;
 	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
 
 	@Autowired
 	private ApplicationContext context;
-	
+
 	@Autowired
 	public SimpMessagingTemplate template;
-	
+
+//	/* Instance variable(s): */
+//	@Autowired
+//	@Qualifier("messageTemplateEngine")
+//	protected SpringTemplateEngine mMessageTemplateEngine;
+
 	public PictoController() throws Exception {
 		PictoPackage.eINSTANCE.eClass();
-		WORKSPACE = PictoApplication.PICTO_FILE.getParentFile().getAbsolutePath() + File.separator;
+		// WORKSPACE = PictoApplication.PICTO_FILES.getParentFile().getAbsolutePath() +
+		// File.separator;
 		FILE_WATCHER.start();
 	}
 
@@ -44,30 +59,64 @@ public class PictoController {
 //		return "greeting";
 //	}
 
+//	@RequestMapping(value = "/pictofiles", method = RequestMethod.GET)
+////	@GetMapping("/pictofiles", method=RequestMethod.GET)
+//	public String getPictoFiles(String information, Model model) throws IOException {
+//		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
+////		model.addAttribute("json", temp);
+////		Context theContext = new Context();
+////		theContext.setVariable("pictofiles", temp);
+////		final String theJsonMessage = mMessageTemplateEngine.process("json/pictofiles", theContext);
+//		model.addAttribute("pictofiles", temp);
+//		return "json/pictofiles";
+//
+////		return temp;
+//	}
+
+	@GetMapping(value = "/")
+	public String getPictoFiles(String information, Model model) throws IOException {
+		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE);
+		model.addAttribute("pictofiles", pictoFiles);
+		return "pictofiles";
+	}
+	
+	@GetMapping(value = "/picto")
+	public String getPicto(String file,  Model model) throws IOException {
+		model.addAttribute("pictoName", file);
+		return "picto";
+	}
+
 	@MessageMapping("/treeview")
 	@SendTo("/topic/picto")
-	public PictoResponse  execute(PictoRequest message) throws Exception {
-		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(null);
-		String result = source.getViewTree(PictoApplication.PICTO_FILE);
+	public PictoResponse getTreeView(PictoRequest message) throws Exception {
+		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl();
+		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
+		String result = source.getViewTree(pictoFile);
 //		System.out.println(result);
 		PictoResponse pictoResponse = new PictoResponse(result);
 		pictoResponse.setType("TreeView");
-		return pictoResponse;
-	}
-
-	@MessageMapping("/gs-guide-websocket") 
-	@SendTo("/topic/picto")
-	public PictoResponse sendBackFileUpdate(File modelFile) throws Exception {
-		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl(null);
-		String result = source.getViewTree(modelFile);
-		String temp = result;
-		PictoResponse pictoResponse = new PictoResponse(temp);
-		pictoResponse.setType("TreeView");
-	
+		
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
 		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-		messaging.convertAndSend("/topic/picto", pictoResponse);
+		messaging.convertAndSend("/topic/picto/" + message.getPictoFile(), pictoResponse);
+		
+		return pictoResponse;
+	}
+
+	@MessageMapping("/gs-guide-websocket")
+	@SendTo("/topic/picto")
+	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
+		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl();
+		String result = source.getViewTree(modifiedFile);
+		String temp = result;
+		PictoResponse pictoResponse = new PictoResponse(temp);
+		pictoResponse.setType("TreeView");
+
+		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+		messaging.setMessageConverter(new MappingJackson2MessageConverter());
+		messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), pictoResponse);
 
 		return pictoResponse;
 	}
@@ -76,7 +125,7 @@ public class PictoController {
 	@SendTo("/topic/picto")
 	public PictoResponse getProjectTree(PictoRequest message) throws Exception {
 
-		String temp = ProjectTreeToJson.convert(WORKSPACE);
+		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
 		PictoResponse pictoResponse = new PictoResponse(temp);
 		pictoResponse.setType("ProjectTree");
 		return pictoResponse;
@@ -86,7 +135,7 @@ public class PictoController {
 	@SendTo("/topic/picto")
 	public PictoResponse openFile(PictoRequest message) throws Exception {
 
-		String temp = Files.readString(Paths.get(WORKSPACE + message.getCode()));
+		String temp = Files.readString(Paths.get(PictoApplication.WORKSPACE + message.getCode()));
 		PictoResponse pictoResponse = new PictoResponse(temp);
 		pictoResponse.setType("OpenFile");
 		return pictoResponse;

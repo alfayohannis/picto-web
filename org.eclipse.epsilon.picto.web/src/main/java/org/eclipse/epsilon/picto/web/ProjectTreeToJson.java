@@ -1,5 +1,6 @@
 package org.eclipse.epsilon.picto.web;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +27,14 @@ public class ProjectTreeToJson {
 		String json = ProjectTreeToJson.convert("");
 		System.out.println(json);
 
+	}
+
+	public static List<String> getPictoFiles(String path) throws IOException {
+		List<String> paths = Files.walk(Paths.get(path)).filter(p -> !Files.isDirectory(p)).map(p -> p.toString())
+				.filter(f -> f.toLowerCase().endsWith(".picto")
+				).collect(Collectors.toList());
+		paths = paths.stream().map(s -> s.replace(PictoApplication.WORKSPACE, "").replace("\\", "/")).collect(Collectors.toList());
+		return paths;
 	}
 
 	/***

@@ -9,15 +9,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
 
 public class WebEglPictoSourceImpl extends WebEglPictoSource {
 
-	public WebEglPictoSourceImpl(File modelFile) throws Exception {
-		super(modelFile);
+	public WebEglPictoSourceImpl() throws Exception {
+		super();
 	}
 
 	public Picto getRenderingMetadata(File file) {
@@ -34,7 +33,7 @@ public class WebEglPictoSourceImpl extends WebEglPictoSource {
 
 	@Override
 	public Picto getRenderingMetadata(IEditorPart editorPart) {
-		return this.getRenderingMetadata(PictoApplication.PICTO_FILE);
+		return this.getRenderingMetadata(this.pictoFile);
 
 //		FlexmiResource resource = (FlexmiResource) getResource(editorPart);
 //		if (resource == null)
@@ -49,21 +48,7 @@ public class WebEglPictoSourceImpl extends WebEglPictoSource {
 //				}).orElse(null);
 	}
 
-	public Resource getResource(File modelFile) {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
-		Resource resource = resourceSet.getResource(URI.createFileURI(modelFile.getAbsolutePath()), true);
-//		Resource resource = resourceSet
-//				.createResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()));
-		try {
-			resource.load(null);
-			return resource;
-		} catch (IOException e) {
-			LogUtil.log(e);
-		}
-		return null;
-	}
+	
 
 	@Override
 	public Resource getResource(IEditorPart editorPart) {

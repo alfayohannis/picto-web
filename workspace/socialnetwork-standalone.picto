@@ -4,5 +4,5 @@
 		<parameter name="name" value="M"/>
 		<parameter name="metamodelUri" value="socialnetwork"/>
 		<parameter name="modelFile" file="socialnetwork.model"/>
-	</model>
+	</model>                             
 </picto>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Web Picto</title>
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <!--  <script type="text/javascript" src="/app.js"></script>-->
+</head>
+
+<body>
+  <h1>Main Menu</h1>
+  <ol id="MainMenu">
+  </ol>
+  <script type="text/javascript">
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        // Typical action to be performed when the document is ready:
+        console.log(xhttp.responseText);
+      } else {
+        console.log(this.status);
+      }
+      console.log(xhttp);
+      console.log(xhttp.responseText);
+    };
+    var params = 'information=ALFA';
+    xhttp.open("GET", "pictofiles", false);
+    xhttp.send(params);
+
+    /*fetch("pictofiles/?information=ALFA")
+          .then(response => {
+            // indicates whether the response is successful (status code 200-299) or not
+            if (!response.ok) {
+              throw new Error(`Request failed with status ${reponse.status}`)
+            }
+            var json = response.json();
+            console.log(json);
+            return json;
+          })
+          .then(data => {
+            console.log(data);
+          })
+          .catch(
+            error => console.log(error)
+            );*/
+  </script>
+</body>
+
+</html>

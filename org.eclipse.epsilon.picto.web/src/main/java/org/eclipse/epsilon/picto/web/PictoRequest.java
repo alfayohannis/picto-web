@@ -2,6 +2,7 @@ package org.eclipse.epsilon.picto.web;
 
 public class PictoRequest {
 
+	private String pictoFile;
 	private String type;
 	private String code;
 
@@ -27,6 +28,19 @@ public class PictoRequest {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	
+
+	/**
+	 * @return the pictoFile
+	 */
+	public String getPictoFile() {
+		return pictoFile;
+	}
+
+	/**
+	 * @param pictoFile the pictoFile to set
+	 */
+	public void setPictoFile(String pictoFile) {
+		this.pictoFile = pictoFile;
+	}
+
 }
