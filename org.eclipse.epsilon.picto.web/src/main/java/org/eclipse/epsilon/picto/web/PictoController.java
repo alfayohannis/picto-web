@@ -89,7 +89,7 @@ public class PictoController {
 	@MessageMapping("/treeview")
 	@SendTo("/topic/picto")
 	public PictoResponse getTreeView(PictoRequest message) throws Exception {
-		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl();
+		WebEglPictoSource source = new WebEglPictoSource();
 		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
 		String result = source.getViewTree(pictoFile);
 //		System.out.println(result);
@@ -107,7 +107,7 @@ public class PictoController {
 	@MessageMapping("/gs-guide-websocket")
 	@SendTo("/topic/picto")
 	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
-		WebEglPictoSourceImpl source = new WebEglPictoSourceImpl();
+		WebEglPictoSource source = new WebEglPictoSource();
 		String result = source.getViewTree(modifiedFile);
 		String temp = result;
 		PictoResponse pictoResponse = new PictoResponse(temp);

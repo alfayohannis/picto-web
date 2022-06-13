@@ -104,6 +104,12 @@
       <artifactId>org.eclipse.epsilon.pinset.engine</artifactId>
       <version>2.4.0</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.egl.engine -->
+    <!--<dependency>
+      <groupId>org.eclipse.epsilon</groupId>
+      <artifactId>org.eclipse.epsilon.egl.engine</artifactId>
+      <version>2.4.0</version>
+    </dependency>-->
     <!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.swt -->
     <dependency>
       <groupId>org.eclipse.platform</groupId>

@@ -101,13 +101,13 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		Element html, body;
 		Element root = document.getDocumentElement();
 		
-		// Create/get the html element
+		// Create/get the html contextElement
 		if (root.getNodeName().equalsIgnoreCase("html")) html = root;
 		else {
 			html = document.createElement("html");
 		}
 		
-		// Create/get the body element
+		// Create/get the body contextElement
 		body = getElementByName(html, "body");
 		if (body == null) {
 			body = document.createElement("body");

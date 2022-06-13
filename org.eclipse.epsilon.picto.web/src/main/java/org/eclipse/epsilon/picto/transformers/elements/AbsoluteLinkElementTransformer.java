@@ -17,7 +17,7 @@ public class AbsoluteLinkElementTransformer extends AbsolutePathElementTransform
 	
 	@Override
 	protected boolean isValidAttribute(String attributeValue) {
-		// An HTML element with an id can be used as a link
+		// An HTML contextElement with an id can be used as a link
 		return super.isValidAttribute(attributeValue) && !attributeValue.startsWith("#");
 	}
 

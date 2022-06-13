@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.internal.registry.ConfigurationElementHandle;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -34,6 +35,7 @@ import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.execute.introspection.recording.IPropertyAccess;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
@@ -53,6 +55,7 @@ import org.eclipse.epsilon.picto.dom.Parameter;
 import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.epsilon.picto.dummy.IEditorPart;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
@@ -65,7 +68,7 @@ import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 
-public abstract class WebEglPictoSource extends EglPictoSource {
+public class WebEglPictoSource extends EglPictoSource {
 
 	protected File modelFile;
 	protected File pictoFile;
@@ -134,7 +137,7 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 			throw new ResourceLoadingException(ex);
 		}
 
-		Picto renderingMetadata = getRenderingMetadata(null);
+		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
 		if (renderingMetadata != null) {
 			IEolModule module;
@@ -159,11 +162,11 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 				renderingMetadata.setFormat("egx");
 
 			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new LazyEgxModule();
+				module = new PictoLazyEglModule();
 			} else {
 				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
 			}
-
+			
 			IEolContext context = module.getContext();
 //			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
 
@@ -212,6 +215,8 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 //						System.console();
 //					}
 //				}
+				
+				((PictoLazyEglModule) module).startRecording();
 
 				@SuppressWarnings("unchecked")
 				List<LazyGenerationRuleContentPromise> instances = (List<LazyGenerationRuleContentPromise>) module
@@ -446,6 +451,16 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 
 			viewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
 
+			for (IPropertyAccess propertyAccess : ((PictoLazyEglModule) module).getPropertyAccessRecorder()
+					.getPropertyAccesses().all()) {
+				GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
+				System.out.println("Rule: " + (generationRulePropertyAccess.getRule() != null ? generationRulePropertyAccess.getRule().getName() : null) + "\n" //
+						+ "Context: " + generationRulePropertyAccess.getContextElement() + "\n" //
+						+ "Element: " + generationRulePropertyAccess.getModelElement() + "\n" //
+						+ "Property: " + generationRulePropertyAccess.getPropertyName() + "\n" //
+						+ "----------------------------");
+			}
+
 			// remove promises to allow serialization to json
 			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
 			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
@@ -561,4 +576,47 @@ public abstract class WebEglPictoSource extends EglPictoSource {
 		}
 		return null;
 	}
+
+	public Picto getRenderingMetadata(File file) {
+		try {
+			ResourceSet resourceSet = new ResourceSetImpl();
+			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
+			Resource resource = resourceSet
+					.getResource(org.eclipse.emf.common.util.URI.createFileURI(file.getAbsolutePath()), true);
+			resource.load(null);
+			return (Picto) resource.getContents().iterator().next();
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	@Override
+	public Picto getRenderingMetadata(IEditorPart editorPart) {
+		return this.getRenderingMetadata(this.pictoFile);
+	}
+
+	@Override
+	public void showElement(String id, String uri, IEditorPart editor) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected Resource getResource(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected IFile getFile(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected boolean supportsEditorType(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
