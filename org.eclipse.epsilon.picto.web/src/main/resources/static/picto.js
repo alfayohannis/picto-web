@@ -165,6 +165,52 @@ Picto.render = function(path) {
   }
 }
 
+
+Picto.getView = function(event) {
+  console.log("PICTO: receiving when an element is clicked");
+  if (event.target.readyState == 4 && event.target.status == 200) {
+    var container = document.getElementById("visualization");
+    container.innerHTML = '';
+    var response = JSON.parse(event.target.responseText);
+    console.log(response);
+    if (response.type == 'svg') {
+      var text = response.content;
+      var parser = new DOMParser();
+      var xmlDoc = parser.parseFromString(text, "text/xml");
+      fragment = xmlDoc.getElementsByTagName("svg")[0];
+      container.appendChild(fragment);
+    } else if (response.type == 'html') {
+      var text = response.content;
+      if (text.trim() == "") {
+        text = "<body></body>";
+      }
+      var parser = new DOMParser();
+      var xmlDoc = parser.parseFromString(text, "text/xml");
+      fragment = xmlDoc.getElementsByTagName("body")[0];
+      container.innerHTML = fragment.innerHTML;
+    } else if (response.type == 'markdown') {
+      var text = response.content;
+      console.log(text);
+      var md = marked.parse(text);
+      console.log(md);
+      container.innerHTML = md;
+    }
+  }
+}
+
+Picto.draw = function(label, uri) {
+  console.log('PICTO: element clicked - ' + label + ", " + uri);
+
+  var request = new XMLHttpRequest();
+  request.addEventListener("load", Picto.getView);
+  request.open("GET", "/pictojson" + uri);
+  request.send();
+
+  window.history.pushState(null, label, uri);
+
+  return false;
+}
+
 Picto.connectToServer = function(pictoFile) {
   this.pictoFile = pictoFile;
   this.socket = new SockJS('/gs-guide-websocket');
@@ -186,6 +232,8 @@ Picto.connectToServer = function(pictoFile) {
         //console.log(treeView);
 
         var jsTreeTree = Picto.createTree(treeView);
+
+        console.log(jsTreeTree);
 
         var tree = $.jstree.reference("#tree");
         if (tree != null) {
@@ -304,9 +352,9 @@ Picto.connectToServer = function(pictoFile) {
 
     // get all files in a project
     // projectTree();
-    //executeCode("");
+    // executeCode("");
     Picto.getTreeView();
-    //projectTree();
+    // projectTree();
 
   });
 }

@@ -30,6 +30,7 @@ import org.eclipse.epsilon.eol.execute.context.FrameType;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.types.EolAnyType;
+import org.eclipse.epsilon.eol.types.EolMap;
 import org.eclipse.epsilon.pinset.DatasetRule;
 import org.eclipse.epsilon.pinset.PinsetModule;
 
@@ -106,7 +107,8 @@ public class LazyEgxModule extends EgxModule {
 			}
 
 			if (parametersBlock != null) {
-				for (Map.Entry<String, ?> entry : parametersBlock.execute(context, false).entrySet()) {
+				EolMap<String, ?> x = parametersBlock.execute(context, false);
+				for (Map.Entry<String, ?> entry : x.entrySet()) {
 					variables.add(new Variable(entry.getKey(), entry.getValue(), EolAnyType.Instance, false));
 				}
 			}

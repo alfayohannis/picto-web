@@ -10,6 +10,7 @@ import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -30,6 +32,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
  * @author Alfa Yohannis
  *
  */
+
 @Controller
 public class PictoController {
 
@@ -79,10 +82,26 @@ public class PictoController {
 		model.addAttribute("pictofiles", pictoFiles);
 		return "pictofiles";
 	}
+
+//	@GetMapping(value = "/pictojson", produces = MediaType.APPLICATION_JSON_VALUE)
+//	public String getPictoJson(String file, String uri, String name, Model model) throws Exception {
+//		String result = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
+//		return result;
+//	}
 	
 	@GetMapping(value = "/picto")
-	public String getPicto(String file,  Model model) throws IOException {
+	public String getPicto(String file, String uri, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
+		if (uri == null) {
+			WebEglPictoSource source = new WebEglPictoSource();
+			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
+			source.transform(pictoFile);
+			uri = PictoElementsMap.PICTO_TREE;
+		}
+		String result = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
+
+		model.addAttribute("pictoResponse", result);
+
 		return "picto";
 	}
 
@@ -91,16 +110,21 @@ public class PictoController {
 	public PictoResponse getTreeView(PictoRequest message) throws Exception {
 		WebEglPictoSource source = new WebEglPictoSource();
 		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
-		String result = source.getViewTree(pictoFile);
-//		System.out.println(result);
+		source.transform(pictoFile);
+		String filename = pictoFile.getAbsolutePath()
+				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
+				.replace("\\", "/");
+		Object x = PictoElementsMap.getMap();
+		String result = PictoElementsMap.getElementViewContentMap(filename)
+				.getElementViewTree(PictoElementsMap.PICTO_TREE);
 		PictoResponse pictoResponse = new PictoResponse(result);
 		pictoResponse.setType("TreeView");
-		
+
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
 		messaging.setMessageConverter(new MappingJackson2MessageConverter());
 		messaging.convertAndSend("/topic/picto/" + message.getPictoFile(), pictoResponse);
-		
+
 		return pictoResponse;
 	}
 
@@ -108,9 +132,13 @@ public class PictoController {
 	@SendTo("/topic/picto")
 	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
 		WebEglPictoSource source = new WebEglPictoSource();
-		String result = source.getViewTree(modifiedFile);
-		String temp = result;
-		PictoResponse pictoResponse = new PictoResponse(temp);
+		source.transform(modifiedFile);
+		String filename = modifiedFile.getAbsolutePath()
+				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
+				.replace("\\", "/");
+		String result = PictoElementsMap.getElementViewContentMap(filename)
+				.getElementViewTree(PictoElementsMap.PICTO_TREE);
+		PictoResponse pictoResponse = new PictoResponse(result);
 		pictoResponse.setType("TreeView");
 
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
@@ -121,23 +149,23 @@ public class PictoController {
 		return pictoResponse;
 	}
 
-	@MessageMapping("/projecttree")
-	@SendTo("/topic/picto")
-	public PictoResponse getProjectTree(PictoRequest message) throws Exception {
-
-		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
-		PictoResponse pictoResponse = new PictoResponse(temp);
-		pictoResponse.setType("ProjectTree");
-		return pictoResponse;
-	}
-
-	@MessageMapping("/openfile")
-	@SendTo("/topic/picto")
-	public PictoResponse openFile(PictoRequest message) throws Exception {
-
-		String temp = Files.readString(Paths.get(PictoApplication.WORKSPACE + message.getCode()));
-		PictoResponse pictoResponse = new PictoResponse(temp);
-		pictoResponse.setType("OpenFile");
-		return pictoResponse;
-	}
+//	@MessageMapping("/projecttree")
+//	@SendTo("/topic/picto")
+//	public PictoResponse getProjectTree(PictoRequest message) throws Exception {
+//
+//		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
+//		PictoResponse pictoResponse = new PictoResponse(temp);
+//		pictoResponse.setType("ProjectTree");
+//		return pictoResponse;
+//	}
+//
+//	@MessageMapping("/openfile")
+//	@SendTo("/topic/picto")
+//	public PictoResponse openFile(PictoRequest message) throws Exception {
+//
+//		String temp = Files.readString(Paths.get(PictoApplication.WORKSPACE + message.getCode()));
+//		PictoResponse pictoResponse = new PictoResponse(temp);
+//		pictoResponse.setType("OpenFile");
+//		return pictoResponse;
+//	}
 }

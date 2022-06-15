@@ -12,6 +12,9 @@ package org.eclipse.epsilon.picto.web;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class JsonViewTree {
 
 	protected List<JsonViewTree> children = new ArrayList<>();
@@ -20,6 +23,7 @@ public class JsonViewTree {
 	protected String icon = "folder";
 	protected JsonViewContent content = null;
 	protected Integer position = null;
+	protected String uri = null;
 
 	public List<JsonViewTree> getChildren() {
 		return children;
@@ -69,4 +73,12 @@ public class JsonViewTree {
 		this.content = content;
 	}
 
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+	
 }

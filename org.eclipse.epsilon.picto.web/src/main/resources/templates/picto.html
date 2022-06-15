@@ -21,7 +21,8 @@
 <body>
   <script th:inline="javascript">
     var pictoName = [[${pictoName}]];
-    
+    var response = JSON.parse([[${pictoResponse}]]); 
+    var content = JSON.parse(response.content);
     /*** GOLDEN LAYOUT ***/
     var config = {
       content: [
@@ -90,15 +91,25 @@
     });
 
     myLayout.on('initialised', function (stack) {
-      //console.log("ALFA:");
+      console.log("PICTO: Golden-layout Initialised");
       //var leftColumn = myLayout.getComponent("LeftColumn");
       //leftColumn.setSize(20,20);
-      //console.log(x);
+      //console.log(content);
+      
+      var jsTreeConfig = {
+          'core': {
+            'data': content
+          },
+          "plugins": ["search"]
+        };
+        $('#tree').jstree(jsTreeConfig);
     });
 
     myLayout.init();
     
-    Picto.connectToServer(pictoName);
+    
+    
+    //Picto.connectToServer(pictoName);
   </script>
 </body>
 

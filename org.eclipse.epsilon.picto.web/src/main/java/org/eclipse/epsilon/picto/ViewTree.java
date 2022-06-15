@@ -32,6 +32,7 @@ public class ViewTree {
 	protected List<Layer> layers = new ArrayList<>();
 	protected Set<java.net.URI> baseUris = new LinkedHashSet<>();
 	protected Integer position = null;
+	protected String uri = null;
 	
 	public ViewTree() {}
 
@@ -367,5 +368,14 @@ public class ViewTree {
 	public void setPosition(Integer position) {
 		this.position = position;
 	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+	
 	
 }
