@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,66 +90,86 @@ public class PictoController {
 //		String result = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
 //		return result;
 //	}
-	
+
 	@GetMapping(value = "/picto")
 	public String getPicto(String file, String uri, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
-		if (uri == null) {
-			WebEglPictoSource source = new WebEglPictoSource();
-			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
-			source.transform(pictoFile);
-			uri = PictoElementsMap.PICTO_TREE;
-		}
-		String result = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
-
-		model.addAttribute("pictoResponse", result);
-
-		return "picto";
-	}
-
-	@MessageMapping("/treeview")
-	@SendTo("/topic/picto")
-	public PictoResponse getTreeView(PictoRequest message) throws Exception {
 		WebEglPictoSource source = new WebEglPictoSource();
-		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
+		File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
 		source.transform(pictoFile);
-		String filename = pictoFile.getAbsolutePath()
-				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-				.replace("\\", "/");
-		Object x = PictoElementsMap.getMap();
-		String result = PictoElementsMap.getElementViewContentMap(filename)
-				.getElementViewTree(PictoElementsMap.PICTO_TREE);
-		PictoResponse pictoResponse = new PictoResponse(result);
-		pictoResponse.setType("TreeView");
-
-		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-		messaging.convertAndSend("/topic/picto/" + message.getPictoFile(), pictoResponse);
-
-		return pictoResponse;
+		if (uri == null) {
+			String treeResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(PictoElementsMap.PICTO_TREE);
+			model.addAttribute("treeResponse", treeResult);
+		} else {
+			String treeResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(PictoElementsMap.PICTO_TREE);
+			String viewResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
+			model.addAttribute("treeResponse", treeResult);
+			model.addAttribute("viewResponse", viewResult);
+			model.addAttribute("selectedUri", uri);
+		}
+		
+		return "picto";
 	}
 
 	@MessageMapping("/gs-guide-websocket")
 	@SendTo("/topic/picto")
-	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
+	public void sendBackFileUpdate(File modifiedFile) throws Exception {
 		WebEglPictoSource source = new WebEglPictoSource();
-		source.transform(modifiedFile);
-		String filename = modifiedFile.getAbsolutePath()
-				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-				.replace("\\", "/");
-		String result = PictoElementsMap.getElementViewContentMap(filename)
-				.getElementViewTree(PictoElementsMap.PICTO_TREE);
-		PictoResponse pictoResponse = new PictoResponse(result);
-		pictoResponse.setType("TreeView");
+		Map<String, String> modifiedObjects = source.transform(modifiedFile);
 
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-		messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), pictoResponse);
+		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
+			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
+			messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), entry.getValue().getBytes());
+		}
 
-		return pictoResponse;
+//		return modifiedObjects;
 	}
+
+//	@MessageMapping("/treeview")
+//	@SendTo("/topic/picto")
+//	public PictoResponse getTreeView(PictoRequest message) throws Exception {
+//		WebEglPictoSource source = new WebEglPictoSource();
+//		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
+//		source.transform(pictoFile);
+//		String filename = pictoFile.getAbsolutePath()
+//				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
+//				.replace("\\", "/");
+//		Object x = PictoElementsMap.getMap();
+//		String result = PictoElementsMap.getElementViewContentMap(filename)
+//				.getElementViewTree(PictoElementsMap.PICTO_TREE);
+//		PictoResponse pictoResponse = new PictoResponse(result);
+//		pictoResponse.setType("TreeView");
+//
+//		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+//		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
+//		messaging.convertAndSend("/topic/picto/" + message.getPictoFile(), pictoResponse);
+//
+//		return pictoResponse;
+//	}
+
+//	@MessageMapping("/gs-guide-websocket")
+//	@SendTo("/topic/picto")
+//	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
+//		WebEglPictoSource source = new WebEglPictoSource();
+//		source.transform(modifiedFile);
+//		String filename = modifiedFile.getAbsolutePath()
+//				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
+//				.replace("\\", "/");
+//		String result = PictoElementsMap.getElementViewContentMap(filename)
+//				.getElementViewTree(PictoElementsMap.PICTO_TREE);
+//		PictoResponse pictoResponse = new PictoResponse(result);
+//		pictoResponse.setType("TreeView");
+//
+//		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+//		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
+//		messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), pictoResponse);
+//
+//		return pictoResponse;
+//	}
 
 //	@MessageMapping("/projecttree")
 //	@SendTo("/topic/picto")

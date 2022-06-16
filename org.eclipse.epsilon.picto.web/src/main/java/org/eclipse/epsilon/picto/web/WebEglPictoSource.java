@@ -123,7 +123,8 @@ public class WebEglPictoSource extends EglPictoSource {
 		this.transform(modelFile);
 	}
 
-	public void transform(File pictoFile) throws Exception {
+	public Map<String, String> transform(File pictoFile) throws Exception {
+		Map<String, String> modifiedObjects = new HashMap<>();
 		this.pictoFile = pictoFile;
 		Resource resource = null;
 		PictoView pictoView = new PictoView();
@@ -420,12 +421,15 @@ public class WebEglPictoSource extends EglPictoSource {
 
 					// put the content into the elementViewContentMap
 					PictoResponse pictoResponse = new PictoResponse();
+					pictoResponse.setFilename(filename);
+					pictoResponse.setUri(vt.getUri());
 					pictoResponse.setType(vt.getContent().getFormat());
 					pictoResponse.setContent(vc.getText());
-					String response = new ObjectMapper().writerWithDefaultPrettyPrinter()
+					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 							.writeValueAsString(pictoResponse);
-					elementViewTreeMap.putElementViewTree(vt.getUri(), response);
+					elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
 
+					modifiedObjects.put(vt.getUri(), jsonString);
 					System.console();
 				}
 
@@ -453,9 +457,10 @@ public class WebEglPictoSource extends EglPictoSource {
 				PictoResponse pictoResponse = new PictoResponse();
 				pictoResponse.setType(vt.getContent().getFormat());
 				pictoResponse.setContent(vt.getContent().getText());
-				String response = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
+				String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
+						.writeValueAsString(pictoResponse);
 				vt.setUri(vt.getName());
-				elementViewTreeMap.putElementViewTree(vt.getUri(), response);
+				elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
 			}
 
 			// Handle patches for existing views (i.e. where source == null and type/rule ==
@@ -500,6 +505,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
 			elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
 //			elementViewTreeMap.putElementViewTree("PictoTree", generateJsonViewTree(rootViewTree).toJson());
 
 			// remove promises to allow serialization to json
@@ -511,13 +517,14 @@ public class WebEglPictoSource extends EglPictoSource {
 			rootViewTree = createEmptyViewTree();
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
 			elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
 //			elementViewTreeMap.putElementViewTree("PictoTree", generateJsonViewTree(rootViewTree).toJson());
 
 //			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
 //			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
 //			return json;
 		}
-//		return null;
+		return modifiedObjects;
 
 	}
 
@@ -530,6 +537,8 @@ public class WebEglPictoSource extends EglPictoSource {
 		String response = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsTreeNodes);
 
 		PictoResponse pictoResponse = new PictoResponse();
+		pictoResponse.setFilename(filename);
+		pictoResponse.setUri(PictoElementsMap.PICTO_TREE);
 		pictoResponse.setType("json");
 		pictoResponse.setContent(response);
 

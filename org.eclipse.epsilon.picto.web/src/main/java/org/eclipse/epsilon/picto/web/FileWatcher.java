@@ -42,7 +42,7 @@ public class FileWatcher extends Thread {
 
 	@MessageMapping("/gs-guide-websocket")
 	public void notifyFileChange(File modelFile) throws Exception {
-		PictoResponse temp = this.pictoController.sendBackFileUpdate(modelFile);
+		this.pictoController.sendBackFileUpdate(modelFile);
 //		template.convertAndSend("/topic/picto", temp);
 		System.console();
 	}

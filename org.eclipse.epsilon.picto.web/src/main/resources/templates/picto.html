@@ -21,8 +21,11 @@
 <body>
   <script th:inline="javascript">
     var pictoName = [[${pictoName}]];
-    var response = JSON.parse([[${pictoResponse}]]); 
-    var content = JSON.parse(response.content);
+    var selectedUri = [[${selectedUri}]];
+    var treeResponse = JSON.parse([[${treeResponse}]]);
+    var treeContent = JSON.parse(treeResponse.content);
+    var viewResponse = JSON.parse([[${viewResponse}]]);
+
     /*** GOLDEN LAYOUT ***/
     var config = {
       content: [
@@ -95,21 +98,23 @@
       //var leftColumn = myLayout.getComponent("LeftColumn");
       //leftColumn.setSize(20,20);
       //console.log(content);
-      
+
       var jsTreeConfig = {
-          'core': {
-            'data': content
-          },
-          "plugins": ["search"]
-        };
-        $('#tree').jstree(jsTreeConfig);
+        'core': {
+          'data': treeContent
+        },
+        "plugins": ["search"]
+      };
+      $('#tree').jstree(jsTreeConfig);
+
+      Picto.render(viewResponse);
     });
 
     myLayout.init();
-    
-    
-    
-    //Picto.connectToServer(pictoName);
+
+
+
+    Picto.connectToServer(pictoName);
   </script>
 </body>
 

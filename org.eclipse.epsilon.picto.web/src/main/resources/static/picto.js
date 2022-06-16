@@ -1,16 +1,4 @@
-/*function setConnected(connected) {
-  $("#connect").prop("disabled", connected);
-  $("#disconnect").prop("disabled", !connected);
-  if (connected) {
-    $("#conversation").show();
-  }
-  else {
-    $("#conversation").hide();
-  }
-  $("#greetings").html("");
-}
-
-function connect() {
+/*function connect() {
   var socket = new SockJS('/gs-guide-websocket');
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function(frame) {
@@ -20,33 +8,7 @@ function connect() {
       showGreeting(JSON.parse(greeting.body).content);
     });
   });
-}
-
-function disconnect() {
-  if (stompClient !== null) {
-    stompClient.disconnect();
-  }
-  setConnected(false);
-  console.log("Disconnected");
-}
-
-function sendName() {
-  stompClient.send("/app/hello", {}, JSON.stringify({ 'name': $("#name").val() }));
-}
-
-function showGreeting(message) {
-  $("#greetings").append("<tr><td>" + message + "</td></tr>");
-}
-
-$(function() {
-  $("form").on('submit', function(e) {
-    e.preventDefault();
-  });
-  $("#connect").click(function() { connect(); });
-  $("#disconnect").click(function() { disconnect(); });
-  $("#send").click(function() { sendName(); });
-});*/
-
+}*/
 
 /*** PICTO ****/
 var Picto = new Object();
@@ -56,6 +18,7 @@ Picto.socket = null;
 Picto.stompClient = null;
 Picto.treeView = null;
 Picto.selectedPath = null;
+Picto.selectedUri = null;
 Picto.viewContents = new Map();
 
 Picto.convertToPictoRequest = function(pictoFile, type, message) {
@@ -136,19 +99,18 @@ Picto.getSelectedViewPath = function(data) {
   return path;
 }
 
-Picto.render = function(path) {
+Picto.render = function(view) {
   var container = document.getElementById("visualization");
   container.innerHTML = '';
-  var fragment;
-  var viewContent = Picto.viewContents.get(path);
-  if (viewContent.format == 'svg') {
-    var text = viewContent.text;
+  console.log(view);
+  if (view.type == 'svg') {
+    var text = view.content;
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(text, "text/xml");
     fragment = xmlDoc.getElementsByTagName("svg")[0];
     container.appendChild(fragment);
-  } else if (viewContent.format == 'html') {
-    var text = viewContent.text;
+  } else if (view.type == 'html') {
+    var text = view.content;
     if (text.trim() == "") {
       text = "<body></body>";
     }
@@ -156,8 +118,8 @@ Picto.render = function(path) {
     var xmlDoc = parser.parseFromString(text, "text/xml");
     fragment = xmlDoc.getElementsByTagName("body")[0];
     container.innerHTML = fragment.innerHTML;
-  } else if (viewContent.format == 'markdown') {
-    var text = viewContent.text;
+  } else if (view.type == 'markdown') {
+    var text = view.content;
     console.log(text);
     var md = marked.parse(text);
     console.log(md);
@@ -165,48 +127,25 @@ Picto.render = function(path) {
   }
 }
 
-
 Picto.getView = function(event) {
   console.log("PICTO: receiving when an element is clicked");
   if (event.target.readyState == 4 && event.target.status == 200) {
-    var container = document.getElementById("visualization");
-    container.innerHTML = '';
-    var response = JSON.parse(event.target.responseText);
-    console.log(response);
-    if (response.type == 'svg') {
-      var text = response.content;
-      var parser = new DOMParser();
-      var xmlDoc = parser.parseFromString(text, "text/xml");
-      fragment = xmlDoc.getElementsByTagName("svg")[0];
-      container.appendChild(fragment);
-    } else if (response.type == 'html') {
-      var text = response.content;
-      if (text.trim() == "") {
-        text = "<body></body>";
-      }
-      var parser = new DOMParser();
-      var xmlDoc = parser.parseFromString(text, "text/xml");
-      fragment = xmlDoc.getElementsByTagName("body")[0];
-      container.innerHTML = fragment.innerHTML;
-    } else if (response.type == 'markdown') {
-      var text = response.content;
-      console.log(text);
-      var md = marked.parse(text);
-      console.log(md);
-      container.innerHTML = md;
-    }
+    var view = JSON.parse(event.target.responseText);
+    Picto.render(view);
   }
 }
 
-Picto.draw = function(label, uri) {
-  console.log('PICTO: element clicked - ' + label + ", " + uri);
+Picto.draw = function(label, url) {
+  console.log('PICTO: element clicked - ' + label + ", " + url);
+
+  Picto.selectedUri = label.split('#')[1];
 
   var request = new XMLHttpRequest();
   request.addEventListener("load", Picto.getView);
-  request.open("GET", "/pictojson" + uri);
+  request.open("GET", "/pictojson" + url);
   request.send();
 
-  window.history.pushState(null, label, uri);
+  window.history.pushState(null, label, url);
 
   return false;
 }
@@ -222,149 +161,16 @@ Picto.connectToServer = function(pictoFile) {
       console.log("PICTO - Receiving messages ... ");
       //console.log(message);
       //console.log(message.body);
-      var json = JSON.parse(message.body);
-
-      // TreeView
-      if (json.type == 'TreeView') {
-
-        var treeView = JSON.parse(json.content);
-        //console.log(json.content);
-        //console.log(treeView);
-
-        var jsTreeTree = Picto.createTree(treeView);
-
-        console.log(jsTreeTree);
-
-        var tree = $.jstree.reference("#tree");
-        if (tree != null) {
-          //var gigi = tree.get_node("#");
-          //tree._model.data = null;
-          //tree.clear_buffer();
-          //tree.refresh();
-          //tree.redraw();
-          //tree.delete_node(gigi);
-          //console.log(tree);
-          tree.destroy();
-          console.log("PICTO - Destroy");
-        }
-
-        var jsTreeConfig = {
-          'core': {
-            'data': jsTreeTree
-          },
-          "plugins": ["search"]
-        };
-        $('#tree').jstree(jsTreeConfig);
-
-        //console.log(x);
-        $('#tree').on("select_node.jstree", function(event, data) {
-          if (data.selected.length) {
-            var path = Picto.getSelectedViewPath(data);
-            Picto.selectedPath = path;
-            console.log(path);
-            Picto.render(path);
-          }
-        });
-
-        $('#tree').bind("ready.jstree", function(event) {
-          /*if (selectedPath != null) {
-            render(selectedPath);
-          }*/
-          console.log("PICTO - Ready");
-        });
-
-        $('#tree').bind("dblclick.jstree", function(event) {
-          var text = event.target.outerText;
-          console.log(text);
-        });
-
-        var to = false;
-        $('#searchTree').keyup(function() {
-          if (to) { clearTimeout(to); }
-          to = setTimeout(function() {
-            var v = $('#searchTree').val();
-            console.log(v);
-            $('#tree').jstree(true).search(v, false, true);
-          }, 250);
-        });
-
-
-
-        Picto.render(Picto.selectedPath);
-
-        /*for (var entry of viewContents.entries()) {
-          console.log(entry);
-        }*/
-        /*for (var entry of viewContents.entries()) {
-          xml = entry[1];
-          break;
-        }*/
+      var view = JSON.parse(message.body);
+      console.log(view);
+      if (view.uri != Picto.selectedUri) {
+        return;
       }
+      Picto.render(view);
 
-      // ProjectTree
-      else if (json.type == 'ProjectTree') {
-        var jsonTree = JSON.parse(json.content);
-        console.log(jsonTree);
-        console.log("");
-      }
-
-      /*//ProjectTree
-      else if (json.type == 'ProjectTree') {
-        //console.log(json.content);
-        var jsonTree = JSON.parse(json.content);
-        console.log(jsonTree);
-        var x = {
-          'core': {
-            'data': jsonTree
-          },
-          "plugins": ["search"]
-        };
-        console.log(x);
-        $('#project').jstree(x);
-
-        $('#project').bind("dblclick.jstree", function(event) {
-          var node = $(event.target).closest("li");
-          if (node[0] != null) {
-            var temp = node[0].innerText.split(/\r?\n/);
-            if (temp.length == 1) {
-              var filename = node[0].innerText;
-              console.log(filename);
-              openFile(filename);
-            }
-          }
-        });
-
-        var to = false;
-        $('#searchText').keyup(function() {
-          if (to) { clearTimeout(to); }
-          to = setTimeout(function() {
-            var v = $('#searchText').val();
-            console.log(v);
-            $('#project').jstree(true).search(v, false, true);
-          }, 250);
-        });
-      }
-      else if (json.type == 'OpenFile') {
-        console.log(json.content);
-        editor.setValue(json.content);
-      }*/
     });
-
-    // get all files in a project
-    // projectTree();
-    // executeCode("");
-    Picto.getTreeView();
-    // projectTree();
-
-  });
+  }
+  );
 }
 
-Picto.updateFlexmiEditorSyntaxHighlighting = function(editor) {
-  var val = editor.getSession().getValue();
-  if ((val.trim() + "").startsWith("<")) {
-    editor.getSession().setMode("ace/mode/xml");
-  }
-  else {
-    editor.getSession().setMode("ace/mode/yaml");
-  }
-}
+
