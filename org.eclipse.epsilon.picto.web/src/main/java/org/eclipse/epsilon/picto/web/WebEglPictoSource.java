@@ -427,9 +427,11 @@ public class WebEglPictoSource extends EglPictoSource {
 					pictoResponse.setContent(vc.getText());
 					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 							.writeValueAsString(pictoResponse);
-					elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
 
-					modifiedObjects.put(vt.getUri(), jsonString);
+					if (!jsonString.equals(elementViewTreeMap.getElementViewTree(vt.getUri()))) {
+						elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
+						modifiedObjects.put(vt.getUri(), jsonString);
+					}
 					System.console();
 				}
 
@@ -460,7 +462,11 @@ public class WebEglPictoSource extends EglPictoSource {
 				String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 						.writeValueAsString(pictoResponse);
 				vt.setUri(vt.getName());
-				elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
+
+				if (!jsonString.equals(elementViewTreeMap.getElementViewTree(vt.getUri()))) {
+					elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
+					modifiedObjects.put(vt.getUri(), jsonString);
+				}
 			}
 
 			// Handle patches for existing views (i.e. where source == null and type/rule ==
@@ -504,25 +510,18 @@ public class WebEglPictoSource extends EglPictoSource {
 			rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
 
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
-			modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
-//			elementViewTreeMap.putElementViewTree("PictoTree", generateJsonViewTree(rootViewTree).toJson());
+			if (!jsTreeJson.equals(elementViewTreeMap.getElementViewTree(PictoElementsMap.PICTO_TREE))) {
+				elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
+				modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			}
 
-			// remove promises to allow serialization to json
-//			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
-//			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
-//			return json;
-//			return viewTree;
 		} else {
 			rootViewTree = createEmptyViewTree();
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
-			modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
-//			elementViewTreeMap.putElementViewTree("PictoTree", generateJsonViewTree(rootViewTree).toJson());
-
-//			JsonViewTree jsonViewTree = generateJsonViewTree(viewTree);
-//			String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonViewTree);
-//			return json;
+			if (!jsTreeJson.equals(elementViewTreeMap.getElementViewTree(PictoElementsMap.PICTO_TREE))) {
+				elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
+				modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			}
 		}
 		return modifiedObjects;
 

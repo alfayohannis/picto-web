@@ -116,7 +116,7 @@ public class PictoController {
 	public void sendBackFileUpdate(File modifiedFile) throws Exception {
 		WebEglPictoSource source = new WebEglPictoSource();
 		Map<String, String> modifiedObjects = source.transform(modifiedFile);
-
+		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
 			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
