@@ -26,6 +26,18 @@
     var treeContent = JSON.parse(treeResponse.content);
     var viewResponse = JSON.parse([[${viewResponse}]]);
 
+    window.onhashchange = function () {
+      alert("AAA");
+    };
+
+    window.addEventListener("hashchange", function (e) {
+      alert("BBBB");
+    });
+
+    window.addEventListener('popstate', function (event) {
+      window.location.reload();
+    });
+
     /*** GOLDEN LAYOUT ***/
     var config = {
       content: [

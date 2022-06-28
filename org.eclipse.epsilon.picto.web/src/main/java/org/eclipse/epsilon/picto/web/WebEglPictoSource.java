@@ -123,26 +123,38 @@ public class WebEglPictoSource extends EglPictoSource {
 		this.transform(modelFile);
 	}
 
-	public Map<String, String> transform(File pictoFile) throws Exception {
-		Map<String, String> modifiedObjects = new HashMap<>();
-		this.pictoFile = pictoFile;
+	public Map<String, String> transform(File modifiedFile) throws Exception {
+		Map<String, String> modifiedViewContents = new HashMap<>();
 		Resource resource = null;
 		PictoView pictoView = new PictoView();
 		ViewTree rootViewTree = new ViewTree();
 
-		String filename = pictoFile.getAbsolutePath()
+		String filename = modifiedFile.getAbsolutePath()
 				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
 				.replace("\\", "/");
-		ElementViewTreeMap elementViewTreeMap = PictoElementsMap.addPictoFile(filename);
-		Object temp = PictoElementsMap.getMap();
+		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(filename);
 
 		try {
-			if (this.pictoFile.getAbsolutePath().endsWith(".model.picto")) {
-				this.modelFile = new File(this.pictoFile.getAbsolutePath().replace(".model.picto", ".model"));
+			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
+					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
+				this.modelFile = new File(modifiedFile.getAbsolutePath());
+				this.pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
 				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
 				resource = getResource(this.modelFile);
-			} else if (this.pictoFile.getAbsolutePath().endsWith("-standalone.picto")) {
-				this.modelFile = this.pictoFile;
+			} else if (modifiedFile.getAbsolutePath().endsWith(".egx")) {
+				String modelFileName = modifiedFile.getName().replace(".egx", ".model");
+				this.modelFile = new File(modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName);
+				this.pictoFile = new File(modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName + ".picto");
+				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				resource = getResource(this.modelFile);
+			} else if (modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
+				this.pictoFile = modifiedFile;
+				this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
+				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				resource = getResource(this.modelFile);
+			} else if (modifiedFile.getAbsolutePath().endsWith("-standalone.picto")) {
+				this.pictoFile = modifiedFile;
+				this.modelFile = modifiedFile;
 				loadMetamodel(this.pictoFile.getName().replace("-standalone.picto", ""));
 			}
 		} catch (Exception ex) {
@@ -228,6 +240,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //					}
 //				}
 
+				/** PROPERTY ACCESS RECORDS **/
 				// start recording for property access
 				((PictoLazyEglModule) module).startRecording();
 
@@ -237,15 +250,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 				// stop recording for property access
 				((PictoLazyEglModule) module).stopRecording();
-
-				// read all property accesses
-				for (IPropertyAccess propertyAccess : ((PictoLazyEglModule) module).getPropertyAccessRecorder()
-						.getPropertyAccesses().all()) {
-					GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
-					EObject eObject = (EObject) generationRulePropertyAccess.getModelElement();
-					String eObjectUri = eObject.eResource().getURIFragment(eObject);
-					elementViewTreeMap.putElementViewTree(eObjectUri, null);
-				}
+				/** END **/
 
 				// Handle dynamic views (i.e. where type != null)'
 				List<CustomView> customViews = renderingMetadata.getCustomViews().stream()
@@ -314,6 +319,7 @@ public class WebEglPictoSource extends EglPictoSource {
 					String icon = getDefaultIcon();
 					List<Patch> patches = new ArrayList<>(1);
 					Collection<String> path = Arrays.asList("");
+					String pathString = null;
 					List<Layer> layers = new ArrayList<>();
 					Variable layersVariable = null;
 					Integer position = null;
@@ -335,6 +341,7 @@ public class WebEglPictoSource extends EglPictoSource {
 								path = ((Collection<?>) varValue).stream().map(Objects::toString)
 										.collect(Collectors.toList());
 							}
+							pathString = "/" + String.join("/", path);
 							break;
 						}
 						case "icon": {
@@ -397,17 +404,17 @@ public class WebEglPictoSource extends EglPictoSource {
 					ViewTree vt = new ViewTree(instance, format, icon, position, patches, layers);
 					rootViewTree.add(new ArrayList<>(path), vt);
 
-					System.out.println(String.format("%s, %s, %s", vt.getName(), format, position));
+//					System.out.println(String.format("%s, %s, %s", vt.getName(), format, position));
 
-					// generate uri for each view tree
-					Object accessedObject = instance.getVariables().iterator().next().getValue();
-					if (accessedObject instanceof EObject) {
-						String accessedObjectUri = ((EObject) accessedObject).eResource()
-								.getURIFragment((EObject) accessedObject);
-						vt.setUri(accessedObjectUri);
-					} else {
-						vt.setUri(path.iterator().next());
-					}
+//					// generate path for each view tree
+//					Object accessedObject = instance.getVariables().iterator().next().getValue();
+//					if (accessedObject instanceof EObject) {
+//						String accessedObjectUri = ((EObject) accessedObject).eResource()
+//								.getURIFragment((EObject) accessedObject);
+//						vt.setUri(accessedObjectUri);
+//					} else {
+//						vt.setUri(path.iterator().next());
+//					}
 
 					// generate the content of each view tree
 					ViewContent vc = vt.getContent();
@@ -419,18 +426,34 @@ public class WebEglPictoSource extends EglPictoSource {
 						}
 					}
 
-					// put the content into the elementViewContentMap
+					// put the content into the FileViewContentCache
+					// read all property accesses
+					for (IPropertyAccess propertyAccess : ((PictoLazyEglModule) module).getPropertyAccessRecorder()
+							.getPropertyAccesses().all()) {
+						GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
+
+						String ruleName = generationRulePropertyAccess.getRule().getName();
+						EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
+						String contextUri = contextElement.eResource().getURIFragment(contextElement);
+						EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
+						String elementUri = modelElement.eResource().getURIFragment(modelElement);
+						String propertyName = generationRulePropertyAccess.getPropertyName();
+						FileViewContentCache.addAccessRecord(filename, ruleName, contextUri, elementUri, propertyName,
+								pathString);
+					}
+
 					PictoResponse pictoResponse = new PictoResponse();
 					pictoResponse.setFilename(filename);
-					pictoResponse.setUri(vt.getUri());
+					pictoResponse.setPath(pathString);
 					pictoResponse.setType(vt.getContent().getFormat());
 					pictoResponse.setContent(vc.getText());
 					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 							.writeValueAsString(pictoResponse);
 
-					if (!jsonString.equals(elementViewTreeMap.getElementViewTree(vt.getUri()))) {
-						elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
-						modifiedObjects.put(vt.getUri(), jsonString);
+					String temp = viewContentCache.getViewContentCache(pathString);
+					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
+						viewContentCache.putViewContentCache(pathString, jsonString);
+						modifiedViewContents.put(pathString, jsonString);
 					}
 					System.console();
 				}
@@ -455,17 +478,19 @@ public class WebEglPictoSource extends EglPictoSource {
 						format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
 
 				// put the content into the elementViewContentMap
+				String pathString = "/" + String.join("/", customView.getPath());
 				ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 				PictoResponse pictoResponse = new PictoResponse();
+				pictoResponse.setFilename(filename);
 				pictoResponse.setType(vt.getContent().getFormat());
 				pictoResponse.setContent(vt.getContent().getText());
+				pictoResponse.setPath(pathString);
 				String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 						.writeValueAsString(pictoResponse);
-				vt.setUri(vt.getName());
 
-				if (!jsonString.equals(elementViewTreeMap.getElementViewTree(vt.getUri()))) {
-					elementViewTreeMap.putElementViewTree(vt.getUri(), jsonString);
-					modifiedObjects.put(vt.getUri(), jsonString);
+				if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
+					viewContentCache.putViewContentCache(pathString, jsonString);
+					modifiedViewContents.put(pathString, jsonString);
 				}
 			}
 
@@ -510,20 +535,20 @@ public class WebEglPictoSource extends EglPictoSource {
 			rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
 
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(elementViewTreeMap.getElementViewTree(PictoElementsMap.PICTO_TREE))) {
-				elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
-				modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
 			}
 
 		} else {
 			rootViewTree = createEmptyViewTree();
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(elementViewTreeMap.getElementViewTree(PictoElementsMap.PICTO_TREE))) {
-				elementViewTreeMap.putElementViewTree(PictoElementsMap.PICTO_TREE, jsTreeJson);
-				modifiedObjects.put(PictoElementsMap.PICTO_TREE, jsTreeJson);
+			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
 			}
 		}
-		return modifiedObjects;
+		return modifiedViewContents;
 
 	}
 
@@ -537,7 +562,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		PictoResponse pictoResponse = new PictoResponse();
 		pictoResponse.setFilename(filename);
-		pictoResponse.setUri(PictoElementsMap.PICTO_TREE);
+		pictoResponse.setPath(FileViewContentCache.PICTO_TREE);
 		pictoResponse.setType("json");
 		pictoResponse.setContent(response);
 
@@ -554,12 +579,12 @@ public class WebEglPictoSource extends EglPictoSource {
 //		String text = viewTree.getName();
 		String text = String.format( //
 				"<span id='%s' onclick=\"Picto.draw('%s', '%s')\">%s</span>" //
-				, filename + "#" + viewTree.getUri() //
-				, filename + "#" + viewTree.getUri() //
-				, "/picto?file=" + filename + "&uri=" + viewTree.getUri() + "&name=" + viewTree.getName() //
+				, filename + "#" + viewTree.getPathString() //
+				, filename + "#" + viewTree.getPathString() //
+				, "/picto?file=" + filename + "&path=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
 				, viewTree.getName());
 		jsTreeNode.setText(text);
-		jsTreeNode.setUri(viewTree.getUri());
+		jsTreeNode.setPath(viewTree.getPathString());
 	}
 
 	protected JsonViewTree generateJsonViewTree(ViewTree viewTree) {
@@ -582,7 +607,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		jsonViewTree.setName(viewTree.getName());
 		jsonViewTree.setIcon(viewTree.getIcon());
 		jsonViewTree.setPosition(viewTree.getPosition());
-		jsonViewTree.setUri(viewTree.getUri());
+		jsonViewTree.setUri(viewTree.getPathString());
 	}
 
 	protected IModel loadModel(Model model, File baseFile) throws Exception {

@@ -42,19 +42,6 @@ public class PictoApplication {
 		String workDir = System.getProperty("user.dir");
 		System.out.println("PICTO - Default Picto Application directory: " + workDir);
 		System.out.println("PICTO - Workspace directory: " + (new File(WORKSPACE)).getAbsolutePath());
-//		for (String arg : args) {
-//			System.out.println("PICTO - Picto file: " + arg);
-//			File pictoFile = new File(WORKSPACE + arg);
-//			if (pictoFile.exists()) {
-//				pictoFile = new File(pictoFile.getAbsolutePath());
-//				PICTO_FILES.add(pictoFile);
-//				System.out.println("PICTO - Absoule Picto file: " + pictoFile.getAbsolutePath());
-//			} else {
-//				throw new Exception("PICTO - ERROR: " + arg + " does not exist.");
-//			}
-//		}
-
-		System.console();
 	}
 
 	public static void main(String[] args) {

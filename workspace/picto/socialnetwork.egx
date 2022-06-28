@@ -1,4 +1,4 @@
-rule Network2Graphviz 
+rule Network2Graphviz  
 	transform n : socialnetwork::SocialNetwork {
 
 	template : "socialnetwork2graphviz.egl"

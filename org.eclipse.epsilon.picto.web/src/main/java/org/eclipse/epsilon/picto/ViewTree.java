@@ -19,7 +19,7 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.swt.graphics.Point;
 
 public class ViewTree {
-	
+
 	protected List<ViewTree> children = new ArrayList<>();
 	protected ContentPromise promise;
 	protected String name = "";
@@ -32,29 +32,30 @@ public class ViewTree {
 	protected List<Layer> layers = new ArrayList<>();
 	protected Set<java.net.URI> baseUris = new LinkedHashSet<>();
 	protected Integer position = null;
-	protected String uri = null;
-	
-	public ViewTree() {}
+
+	public ViewTree() {
+	}
 
 	public ViewTree(String name) {
 		this.name = name;
 	}
-	
+
 	public ViewTree(String content, String format) {
 		this.promise = new StaticContentPromise(content);
 		this.format = format;
 	}
-	
+
 	public ViewTree(File file, String format) {
 		this.promise = new StaticContentPromise(file);
 		this.format = format;
 	}
-	
+
 	public ViewTree(ContentPromise promise, String format, String icon, List<Patch> patches, List<Layer> layers) {
 		this(promise, format, icon, null, patches, layers);
 	}
-	
-	public ViewTree(ContentPromise promise, String format, String icon, Integer position, List<Patch> patches, List<Layer> layers) {
+
+	public ViewTree(ContentPromise promise, String format, String icon, Integer position, List<Patch> patches,
+			List<Layer> layers) {
 		this.promise = promise;
 		this.format = format;
 		this.icon = icon;
@@ -65,7 +66,7 @@ public class ViewTree {
 
 	public ViewTree add(List<String> path, ViewTree other) {
 		ViewTree child = null;
-		
+
 		if (path.size() > 1) {
 			String name = path.get(0);
 			List<String> rest = path.subList(1, path.size());
@@ -76,17 +77,16 @@ public class ViewTree {
 					break;
 				}
 			}
-			
+
 			if (child == null) {
 				child = new ViewTree(name);
 				children.add(child);
 			}
-			
+
 			child.add(rest, other);
-		}
-		else {
+		} else {
 			String firstPath = path.get(0);
-			
+
 			for (ViewTree candidate : children) {
 				String candidateName = candidate.getName();
 				if (candidateName != null && candidateName.equals(firstPath)) {
@@ -94,13 +94,12 @@ public class ViewTree {
 					break;
 				}
 			}
-			
+
 			if (child == null) {
 				child = other;
 				child.setName(firstPath);
 				children.add(child);
-			}
-			else {
+			} else {
 				child.setFormat(other.getFormat());
 				child.setPromise(other.getPromise());
 				child.setIcon(other.getIcon());
@@ -108,16 +107,16 @@ public class ViewTree {
 				child.setLayers(other.getLayers());
 				child.setPosition(other.getPosition());
 			}
-			
+
 		}
 		return child;
 	}
-	
+
 	public void ingest(ViewTree other) {
-		
+
 		List<ViewTree> obsolete = new ArrayList<>();
 		List<ViewTree> fresh = new ArrayList<>(other.getChildren());
-		
+
 		for (ViewTree child : getChildren()) {
 			ViewTree counterpart = null;
 			for (ViewTree otherChild : other.getChildren()) {
@@ -129,8 +128,7 @@ public class ViewTree {
 						if (counterpart.getCachedContent() != null) {
 							child.setContent(counterpart.getCachedContent());
 						}
-					}
-					else {
+					} else {
 						child.setPromise(counterpart.getPromise());
 					}
 					child.setFormat(counterpart.getFormat());
@@ -146,126 +144,126 @@ public class ViewTree {
 				obsolete.add(child);
 			}
 		}
-		
+
 		getChildren().removeAll(obsolete);
 		getChildren().addAll(fresh);
-		
+
 		// maintain any base URIs aded in the new ViewTree
 		this.getBaseUris().addAll(other.getBaseUris());
 	}
-	
+
 	protected void preserveLayerState(ViewTree existing, ViewTree _new) {
 		for (Layer newLayer : _new.getLayers()) {
-			Layer existingLayer = existing.getLayers().stream().filter(l -> l.getId().equals(newLayer.getId())).findFirst().orElse(null);
+			Layer existingLayer = existing.getLayers().stream().filter(l -> l.getId().equals(newLayer.getId()))
+					.findFirst().orElse(null);
 			if (existingLayer != null) {
 				newLayer.setActive(existingLayer.isActive());
 			}
 		}
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public List<ViewTree> getChildren() {
 		children.forEach(c -> c.setParent(this));
 		return children;
 	}
-	
+
 	public void setParent(ViewTree parent) {
 		this.parent = parent;
 	}
-	
+
 	public ViewTree getParent() {
 		return parent;
 	}
-	
+
 	public ViewContent getContent() {
 		if (cachedContent == null) {
-			
+
 			if (promise == null) {
 				cachedContent = new ViewContent(format, "", null, getLayers(), getPatches(), getBaseUris());
-			}
-			else {
+			} else {
 				try {
-					File file = promise instanceof StaticContentPromise ? ((StaticContentPromise) promise).getFile() : null;
-					cachedContent = new ViewContent(format, promise.getContent(), file, getLayers(), getPatches(), getBaseUris());
+					File file = promise instanceof StaticContentPromise ? ((StaticContentPromise) promise).getFile()
+							: null;
+					cachedContent = new ViewContent(format, promise.getContent(), file, getLayers(), getPatches(),
+							getBaseUris());
 				} catch (Exception e) {
-					cachedContent = new ViewContent("exception", e.getMessage(), null, getLayers(), getPatches(), getBaseUris());
+					cachedContent = new ViewContent("exception", e.getMessage(), null, getLayers(), getPatches(),
+							getBaseUris());
 				}
 			}
 		}
-		
+
 		return cachedContent;
 	}
-	
+
 	public List<Patch> getPatches() {
 		return patches;
 	}
-	
+
 	public void setPatches(List<Patch> patches) {
 		this.patches = patches;
 	}
-	
+
 	public List<ViewContent> getContents(PictoView pictoView) {
 		List<ViewContent> viewContents = new ArrayList<>();
-		for (
-			ViewContent viewContent = getContent();
-			viewContent != null && viewContents.add(viewContent);
-			viewContent = viewContent.getNext(pictoView)
-		);
+		for (ViewContent viewContent = getContent(); viewContent != null
+				&& viewContents.add(viewContent); viewContent = viewContent.getNext(pictoView))
+			;
 		return viewContents;
 	}
-	
+
 	/**
-	 * Concatenates the result of {@link #getContents(PictoView)}
-	 * where each {@link ViewContent#getText()}) is separated by a new line.
+	 * Concatenates the result of {@link #getContents(PictoView)} where each
+	 * {@link ViewContent#getText()}) is separated by a new line.
 	 * 
 	 * @param pictoView
 	 * @return
 	 * @since 2.2
 	 */
 	public String getContentsText(PictoView pictoView) {
-		return getContents(pictoView).stream()
-			.map(ViewContent::getText)
-			.collect(Collectors.joining(System.lineSeparator()));
+		return getContents(pictoView).stream().map(ViewContent::getText)
+				.collect(Collectors.joining(System.lineSeparator()));
 	}
-	
+
 	public void setPromise(ContentPromise promise) {
 		if (promise != this.promise) {
 			this.promise = promise;
 			cachedContent = null;
 		}
 	}
-	
+
 	public ContentPromise getPromise() {
 		return promise;
 	}
-	
+
 	public String getFormat() {
 		return format;
 	}
-	
+
 	public void setFormat(String format) {
 		this.format = format;
 	}
-	
+
 	public void setIcon(String icon) {
 		this.icon = icon;
 	}
-	
+
 	public String getIcon() {
 		return icon;
 	}
-	
+
 	public Point getScrollPosition() {
 		return scrollPosition;
 	}
-	
+
 	public void setScrollPosition(Point scrollPosition) {
 		this.scrollPosition = scrollPosition;
 	}
@@ -273,11 +271,11 @@ public class ViewTree {
 	public List<Layer> getLayers() {
 		return layers;
 	}
-	
+
 	public void setLayers(List<Layer> layers) {
 		this.layers = layers;
 	}
-	
+
 	@Override
 	public String toString() {
 		return render(this, "");
@@ -289,8 +287,7 @@ public class ViewTree {
 		if (viewTree.getPromise() != null) {
 			try {
 				content = viewTree.getPromise().getContent();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				content = "ContentError";
 			}
 			if (content == null) {
@@ -311,40 +308,51 @@ public class ViewTree {
 
 	public List<String> getPath() {
 		List<String> path = new ArrayList<>();
-		if (parent != null) path.addAll(parent.getPath());
+		if (parent != null)
+			path.addAll(parent.getPath());
 		path.add(this.getName() + "");
 		return path;
 	}
-	
+
+	public String getPathString() {
+		String temp = String.join("/", getPath());
+		if (temp.length() > 0 && temp.charAt(0) != '/') {
+			temp = "/" + temp;
+		}
+		return temp;
+	}
+
 	public ViewTree forPath(List<String> path) {
 		if (path.get(0).equals(getName())) {
 			if (path.size() > 1) {
 				for (ViewTree child : getChildren()) {
 					ViewTree forPath = child.forPath(path.subList(1, path.size()));
-					if (forPath != null) return forPath;
+					if (forPath != null)
+						return forPath;
 				}
-			}
-			else {
+			} else {
 				return this;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public ViewTree getFirstWithContent() {
-		if (promise != null) return this;
+		if (promise != null)
+			return this;
 		for (ViewTree child : getChildren()) {
 			ViewTree result = child.getFirstWithContent();
-			if (result != null) return result;
+			if (result != null)
+				return result;
 		}
 		return null;
 	}
-	
+
 	public void clearCache() {
 		cachedContent = null;
 	}
-	
+
 	public Set<java.net.URI> getBaseUris() {
 		if (parent != null) {
 			return parent.getBaseUris();
@@ -360,22 +368,13 @@ public class ViewTree {
 	public ViewContent getCachedContent() {
 		return cachedContent;
 	}
-	
+
 	public Integer getPosition() {
 		return position;
 	}
-	
+
 	public void setPosition(Integer position) {
 		this.position = position;
 	}
 
-	public String getUri() {
-		return uri;
-	}
-
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
-	
-	
 }

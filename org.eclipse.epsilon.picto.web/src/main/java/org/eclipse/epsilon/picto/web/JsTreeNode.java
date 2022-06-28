@@ -16,8 +16,8 @@ public class JsTreeNode {
 
 	protected List<JsTreeNode> children = new ArrayList<>();
 	protected String text;
+	protected String path;
 	protected String icon = "jstree-folder";
-	protected String uri;
 	protected JsTreeState state = new JsTreeState();
 
 	public List<JsTreeNode> getChildren() {
@@ -44,19 +44,19 @@ public class JsTreeNode {
 		this.icon = icon;
 	}
 
-	public String getUri() {
-		return uri;
-	}
-
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
-
 	public JsTreeState getState() {
 		return state;
 	}
 
 	public void setState(JsTreeState state) {
 		this.state = state;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 }

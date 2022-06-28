@@ -2,31 +2,11 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.eclipse.epsilon.picto.dom.PictoPackage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring5.SpringTemplateEngine;
 
 /***
  * Receive Requests and send back Responses
@@ -38,25 +18,10 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 @Controller
 public class PictoController {
 
-	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
-
-	@Autowired
-	private ApplicationContext context;
-
-	@Autowired
-	public SimpMessagingTemplate template;
-
 //	/* Instance variable(s): */
 //	@Autowired
 //	@Qualifier("messageTemplateEngine")
 //	protected SpringTemplateEngine mMessageTemplateEngine;
-
-	public PictoController() throws Exception {
-		PictoPackage.eINSTANCE.eClass();
-		// WORKSPACE = PictoApplication.PICTO_FILES.getParentFile().getAbsolutePath() +
-		// File.separator;
-		FILE_WATCHER.start();
-	}
 
 //	@GetMapping("/greeting")
 //	public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
@@ -86,45 +51,33 @@ public class PictoController {
 	}
 
 //	@GetMapping(value = "/pictojson", produces = MediaType.APPLICATION_JSON_VALUE)
-//	public String getPictoJson(String file, String uri, String name, Model model) throws Exception {
-//		String result = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
+//	public String getPictoJson(String file, String path, String name, Model model) throws Exception {
+//		String result = FileViewContentCache.getElementViewContentMap(file).getElementViewTree(path);
 //		return result;
 //	}
 
 	@GetMapping(value = "/picto")
-	public String getPicto(String file, String uri, String name, Model model) throws Exception {
+	public String getPicto(String file, String path, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
-		WebEglPictoSource source = new WebEglPictoSource();
-		File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
-		source.transform(pictoFile);
-		if (uri == null) {
-			String treeResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(PictoElementsMap.PICTO_TREE);
+		if (FileViewContentCache.getViewContentCache(file) == null) {
+			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
+			WebEglPictoSource source = new WebEglPictoSource();
+			source.transform(pictoFile);
+		}
+		if (path == null) {
+			String treeResult = FileViewContentCache.getViewContentCache(file)
+					.getViewContentCache(FileViewContentCache.PICTO_TREE);
 			model.addAttribute("treeResponse", treeResult);
 		} else {
-			String treeResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(PictoElementsMap.PICTO_TREE);
-			String viewResult = PictoElementsMap.getElementViewContentMap(file).getElementViewTree(uri);
+			String treeResult = FileViewContentCache.getViewContentCache(file)
+					.getViewContentCache(FileViewContentCache.PICTO_TREE);
+			String viewResult = FileViewContentCache.getViewContentCache(file).getViewContentCache(path);
 			model.addAttribute("treeResponse", treeResult);
 			model.addAttribute("viewResponse", viewResult);
-			model.addAttribute("selectedUri", uri);
+			model.addAttribute("selectedUri", path);
 		}
-		
+
 		return "picto";
-	}
-
-	@MessageMapping("/gs-guide-websocket")
-	@SendTo("/topic/picto")
-	public void sendBackFileUpdate(File modifiedFile) throws Exception {
-		WebEglPictoSource source = new WebEglPictoSource();
-		Map<String, String> modifiedObjects = source.transform(modifiedFile);
-		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
-		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
-			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-			messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), entry.getValue().getBytes());
-		}
-
-//		return modifiedObjects;
 	}
 
 //	@MessageMapping("/treeview")
@@ -136,9 +89,9 @@ public class PictoController {
 //		String filename = pictoFile.getAbsolutePath()
 //				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
 //				.replace("\\", "/");
-//		Object x = PictoElementsMap.getMap();
-//		String result = PictoElementsMap.getElementViewContentMap(filename)
-//				.getElementViewTree(PictoElementsMap.PICTO_TREE);
+//		Object x = FileViewContentCache.getMap();
+//		String result = FileViewContentCache.getElementViewContentMap(filename)
+//				.getElementViewTree(FileViewContentCache.PICTO_TREE);
 //		PictoResponse pictoResponse = new PictoResponse(result);
 //		pictoResponse.setType("TreeView");
 //
@@ -150,7 +103,7 @@ public class PictoController {
 //		return pictoResponse;
 //	}
 
-//	@MessageMapping("/gs-guide-websocket")
+//	@MessageMapping("/picto-web")
 //	@SendTo("/topic/picto")
 //	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
 //		WebEglPictoSource source = new WebEglPictoSource();
@@ -158,8 +111,8 @@ public class PictoController {
 //		String filename = modifiedFile.getAbsolutePath()
 //				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
 //				.replace("\\", "/");
-//		String result = PictoElementsMap.getElementViewContentMap(filename)
-//				.getElementViewTree(PictoElementsMap.PICTO_TREE);
+//		String result = FileViewContentCache.getElementViewContentMap(filename)
+//				.getElementViewTree(FileViewContentCache.PICTO_TREE);
 //		PictoResponse pictoResponse = new PictoResponse(result);
 //		pictoResponse.setType("TreeView");
 //

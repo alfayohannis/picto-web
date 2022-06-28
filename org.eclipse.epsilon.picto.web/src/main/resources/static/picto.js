@@ -1,5 +1,5 @@
 /*function connect() {
-  var socket = new SockJS('/gs-guide-websocket');
+  var socket = new SockJS('/picto-web');
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function(frame) {
     setConnected(true);
@@ -17,8 +17,8 @@ Picto.pictoFile = null;
 Picto.socket = null;
 Picto.stompClient = null;
 Picto.treeView = null;
+Picto.selectedPathOld = null;
 Picto.selectedPath = null;
-Picto.selectedUri = null;
 Picto.viewContents = new Map();
 
 Picto.convertToPictoRequest = function(pictoFile, type, message) {
@@ -77,8 +77,8 @@ Picto.recursiveTree = function(tree, treeView, path) {
     object['state'] = { "opened": true };
     object['children'] = [];
     var p = path + "/" + object['text'];
-    if (Picto.selectedPath == null)
-      Picto.selectedPath = p;
+    if (Picto.selectedPathOld == null)
+      Picto.selectedPathOld = p;
     Picto.viewContents.set(p, child.content);
     Picto.recursiveTree(object['children'], child, p);
   }
@@ -130,6 +130,9 @@ Picto.render = function(view) {
 Picto.getView = function(event) {
   console.log("PICTO: receiving when an element is clicked");
   if (event.target.readyState == 4 && event.target.status == 200) {
+    if (event.target.responseText == null || event.target.responseText == "") {
+      return;
+    } 
     var view = JSON.parse(event.target.responseText);
     Picto.render(view);
   }
@@ -138,7 +141,7 @@ Picto.getView = function(event) {
 Picto.draw = function(label, url) {
   console.log('PICTO: element clicked - ' + label + ", " + url);
 
-  Picto.selectedUri = label.split('#')[1];
+  Picto.selectedPath = label.split('#')[1];
 
   var request = new XMLHttpRequest();
   request.addEventListener("load", Picto.getView);
@@ -152,7 +155,7 @@ Picto.draw = function(label, url) {
 
 Picto.connectToServer = function(pictoFile) {
   this.pictoFile = pictoFile;
-  this.socket = new SockJS('/gs-guide-websocket');
+  this.socket = new SockJS('/picto-web');
   this.stompClient = Stomp.over(this.socket);
   this.stompClient.connect({}, function(frame) {
     //setConnected(true);
@@ -163,7 +166,7 @@ Picto.connectToServer = function(pictoFile) {
       //console.log(message.body);
       var view = JSON.parse(message.body);
       console.log(view);
-      if (view.uri != Picto.selectedUri) {
+      if (view.path != Picto.selectedPath) {
         return;
       }
       Picto.render(view);

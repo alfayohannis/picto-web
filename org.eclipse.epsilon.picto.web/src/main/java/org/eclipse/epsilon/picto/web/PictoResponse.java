@@ -3,7 +3,7 @@ package org.eclipse.epsilon.picto.web;
 public class PictoResponse {
 
 	private String filename;
-	private String uri;
+	private String path;
 	private String type;
 	private String content;
 
@@ -18,12 +18,12 @@ public class PictoResponse {
 		this.filename = filename;
 	}
 
-	public String getUri() {
-		return uri;
+	public String getPath() {
+		return path;
 	}
 
-	public void setUri(String uri) {
-		this.uri = uri;
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	public PictoResponse(String content) {
