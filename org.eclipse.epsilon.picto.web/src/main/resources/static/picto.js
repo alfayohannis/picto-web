@@ -107,8 +107,9 @@ Picto.render = function(view) {
     var text = view.content;
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(text, "text/xml");
-    fragment = xmlDoc.getElementsByTagName("svg")[0];
-    container.appendChild(fragment);
+    var svg = xmlDoc.getElementsByTagName("svg")[0];
+    container.appendChild(svg);
+    svgPanZoom(svg, {zoomEnabled: true,fit: true,center: true});
   } else if (view.type == 'html') {
     var text = view.content;
     if (text.trim() == "") {

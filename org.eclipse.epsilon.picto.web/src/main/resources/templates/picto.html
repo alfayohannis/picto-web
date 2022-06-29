@@ -14,6 +14,7 @@
   <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
   <script type="text/javascript" src="js/goldenlayout.js"></script>
   <script type="text/javascript" src="js/marked.min.js"></script>
+  <script type="text/javascript" src="js/svg-pan-zoom.js"></script>
   <script type="text/javascript" src="dist/jstree.js"></script>
   <script type="text/javascript" src="/picto.js"></script>
 </head>
@@ -25,14 +26,6 @@
     var treeResponse = JSON.parse([[${treeResponse}]]);
     var treeContent = JSON.parse(treeResponse.content);
     var viewResponse = JSON.parse([[${viewResponse}]]);
-
-    window.onhashchange = function () {
-      alert("AAA");
-    };
-
-    window.addEventListener("hashchange", function (e) {
-      alert("BBBB");
-    });
 
     window.addEventListener('popstate', function (event) {
       window.location.reload();
@@ -74,7 +67,6 @@
     myLayout.registerComponent('Visualization', function (container,
       componentState) {
       container.getElement()
-        //.html('<svg id="visualization" class="visualization" width="900" height="600" role="img" xmlns="http://www.w3.org/2000/svg"></svg>');
         .html('<div id="visualization" class="visualization"></div>');
     });
 
@@ -83,14 +75,6 @@
         .html('<input type="text" id="searchTree" name="searchTree"></input>' +
           '<div id="tree" class="tree"></div>');
     });
-
-    /*myLayout.registerComponent('Project', function (container, componentState) {
-      container.getElement()
-        .html('<input type="text" id="searchText" name="searchText"></input>' +
-          '<div id="project" class="project"></div>');      
-    });*/
-
-
 
     /// Callback for every created stack
     myLayout.on('stackCreated', function (stack) {
@@ -107,18 +91,60 @@
 
     myLayout.on('initialised', function (stack) {
       console.log("PICTO: Golden-layout Initialised");
-      //var leftColumn = myLayout.getComponent("LeftColumn");
-      //leftColumn.setSize(20,20);
-      //console.log(content);
 
       var jsTreeConfig = {
         'core': {
-          'data': treeContent
+          'data': treeContent,
+          'check_callback': true
         },
-        "plugins": ["search"]
+        "plugins": ["search", "contextmenu"],
+        "contextmenu": {
+          items: {
+            "open": {
+              "separator_before": true,
+              "separator_after": true,
+              "label": "Open Tab ...",
+              "title": "Open in a new tab",
+              "action": function () {alert("Open in a new tab");}
+            }
+            //
+          }
+          //
+        }
+        //
       };
+
       $('#tree').jstree(jsTreeConfig);
 
+      $('#tree').on("select_node.jstree", function (event, data) {
+        if (data.selected.length) {
+          var path = Picto.getSelectedViewPath(data);
+          Picto.selectedPath = path;
+          console.log(path);
+          var label = pictoName + '#' + path;
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+          Picto.draw(label, url);
+        }
+      });
+
+      var to = false;
+      $('#searchTree').keyup(function () {
+        if (to) {clearTimeout(to);}
+        to = setTimeout(function () {
+          var v = $('#searchTree').val();
+          console.log(v);
+          $('#tree').jstree(true).search(v, false, true);
+        }, 250);
+      });
+
+      //$.jstree.defaults.contextmenu.items = 
+
+      $('#tree').on("show_contextmenu.jstree", function (event, data) {
+        console.log(event);
+        console.log(data);
+      });
+
+      // Render the default view, the most top, first view 
       Picto.render(viewResponse);
     });
 

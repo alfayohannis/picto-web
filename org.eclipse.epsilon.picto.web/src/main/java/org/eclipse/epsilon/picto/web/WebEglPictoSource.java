@@ -576,13 +576,13 @@ public class WebEglPictoSource extends EglPictoSource {
 			jsTreeNode.getChildren().add(jsonChild);
 			copyViewTreeToJsTreeData(filename, child, jsonChild);
 		}
-//		String text = viewTree.getName();
-		String text = String.format( //
-				"<span id='%s' onclick=\"Picto.draw('%s', '%s')\">%s</span>" //
-				, filename + "#" + viewTree.getPathString() //
-				, filename + "#" + viewTree.getPathString() //
-				, "/picto?file=" + filename + "&path=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
-				, viewTree.getName());
+		String text = viewTree.getName();
+//		String text = String.format( //
+//				"<span id='%s' onclick=\"Picto.draw('%s', '%s')\">%s</span>" //
+//				, filename + "#" + viewTree.getPathString() //
+//				, filename + "#" + viewTree.getPathString() //
+//				, "/picto?file=" + filename + "&path=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
+//				, viewTree.getName());
 		jsTreeNode.setText(text);
 		jsTreeNode.setPath(viewTree.getPathString());
 	}
