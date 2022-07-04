@@ -540,7 +540,7 @@ public class CustomViewImpl extends MinimalEObjectImpl.Container implements Cust
 		if (eIsProxy()) return super.toString();
 
 		StringBuilder result = new StringBuilder(super.toString());
-		result.append(" (path: ");
+		result.append(" (target: ");
 		result.append(path);
 		result.append(", icon: ");
 		result.append(icon);

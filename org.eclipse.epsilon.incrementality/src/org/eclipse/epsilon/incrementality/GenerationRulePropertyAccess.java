@@ -1,4 +1,4 @@
-package org.eclipse.epsilon.picto.web;
+package org.eclipse.epsilon.incrementality;
 
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccess;

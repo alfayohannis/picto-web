@@ -51,8 +51,8 @@ public class PictoController {
 	}
 
 //	@GetMapping(value = "/pictojson", produces = MediaType.APPLICATION_JSON_VALUE)
-//	public String getPictoJson(String file, String path, String name, Model model) throws Exception {
-//		String result = FileViewContentCache.getElementViewContentMap(file).getElementViewTree(path);
+//	public String getPictoJson(String file, String target, String name, Model model) throws Exception {
+//		String result = FileViewContentCache.getElementViewContentMap(file).getElementViewTree(target);
 //		return result;
 //	}
 

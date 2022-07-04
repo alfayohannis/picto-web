@@ -41,7 +41,7 @@ public class ProjectTreeToJson {
 	 * Convert a filepath to a json tree structure that conforms to JsTree.com's
 	 * tree structure.
 	 * 
-	 * @param path
+	 * @param target
 	 * @return
 	 * @throws IOException
 	 */

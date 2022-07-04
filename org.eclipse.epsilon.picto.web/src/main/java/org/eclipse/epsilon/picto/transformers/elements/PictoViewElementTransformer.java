@@ -26,7 +26,7 @@ public class PictoViewElementTransformer extends ReplacingElementTransformer {
 	
 	@Override
 	public void transform(Element element) {
-		String path = element.getAttribute("path");
+		String path = element.getAttribute("target");
 		if (path != null) {
 			ViewTree viewTree = picto.getViewTree().forPath(
 				Arrays.stream(("," + path).split(","))

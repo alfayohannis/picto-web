@@ -18,12 +18,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PictoApplication {
 
 	/***
-	 * Define the relative workspace path
+	 * Define the relative workspace target
 	 */
 	public static final String WORKSPACE = ".." + File.separator + "workspace" + File.separator;
 
 	/***
-	 * This contains the visualised Picto file's path
+	 * This contains the visualised Picto file's target
 	 */
 	public static final List<File> PICTO_FILES = new ArrayList<File>();
 	

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="org.eclipse.epsilon.picto.web/src/main/java"/>
+	<classpathentry kind="src" path="org.eclipse.epsilon.picto.web/src/test/java"/>
+	<classpathentry kind="lib" path="org.eclipse.epsilon.picto.web/.mvn/wrapper/maven-wrapper.jar"/>
+	<classpathentry kind="lib" path="org.eclipse.epsilon.picto.web/picto.jar"/>
+	<classpathentry kind="lib" path="org.eclipse.epsilon.picto.web/target/picto-0.0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="output" path="org.eclipse.epsilon.picto.web/target/classes"/>
+</classpath>

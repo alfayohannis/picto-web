@@ -1,0 +1,52 @@
+rule Diagram transform package : ecore::EPackage {
+    parameters : Map { 
+        "format" = "graphviz",
+        "path" = List{package.name},
+        "icon" = "diagram-ff0000",
+       
+        "metaModelName" = package.name,
+        "classifier" = null
+    }
+    template: "dot/Dot.egl"
+    target: package.name + "/" + package.name + ".dot"
+}
+
+rule Packages transform package : ecore::EPackage {
+    parameters : Map { 
+        "format" = "html",
+        "path" = List{package.name},
+        "icon" = "diagram-ff0000",
+       
+        "metaModelName" = package.name,
+        "classifier" = null
+    }
+    template: "html/Page.egl"
+    target: package.name + "/" + package.name + "-package-index.html"
+}
+
+rule DataTypes transform dataType : ecore::EEnum {
+    parameters : Map { 
+        "format" = "html",
+        "path" = List{dataType.ePackage.name, dataType.name},
+        "icon" = "diagram-ff0000",
+       
+        "package" = dataType.ePackage,
+        "metaModelName" = dataType.ePackage.name,
+        "classifier" = dataType
+    }
+    template: "html/Page.egl"
+    target: dataType.ePackage.name + "/" + dataType.ePackage.name + "-"+ dataType.name + ".html"
+}
+
+rule Classes transform classifier : ecore::EClass {
+    parameters : Map { 
+        "format" = "html",
+        "path" = List{classifier.ePackage.name, classifier.name},
+        "icon" = "diagram-ff0000",
+       
+        "package" = classifier.ePackage,
+        "metaModelName" = classifier.ePackage.name
+    }
+    template: "html/Page.egl"
+    target: classifier.ePackage.name + "/" + classifier.ePackage.name + "-"+ classifier.name + ".html"
+}

@@ -44,6 +44,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
+import org.eclipse.epsilon.incrementality.GenerationRulePropertyAccess;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoView;
@@ -274,7 +275,7 @@ public class WebEglPictoSource extends EglPictoSource {
 						}
 
 						if (customView.getPath() != null)
-							customView.getParameters().add(createParameter("path", customView.getPath()));
+							customView.getParameters().add(createParameter("target", customView.getPath()));
 						if (customView.getIcon() != null)
 							customView.getParameters().add(createParameter("icon", customView.getIcon()));
 						if (customView.getFormat() != null)
@@ -333,7 +334,7 @@ public class WebEglPictoSource extends EglPictoSource {
 							format = varValue + "";
 							break;
 						}
-						case "path": {
+						case "target": {
 							if (!(varValue instanceof Collection)) {
 								(path = (Collection<String>) (varValue = new ArrayList<>(1)))
 										.add(Objects.toString(varValue));
@@ -406,14 +407,14 @@ public class WebEglPictoSource extends EglPictoSource {
 
 //					System.out.println(String.format("%s, %s, %s", vt.getName(), format, position));
 
-//					// generate path for each view tree
+//					// generate target for each view tree
 //					Object accessedObject = instance.getVariables().iterator().next().getValue();
 //					if (accessedObject instanceof EObject) {
 //						String accessedObjectUri = ((EObject) accessedObject).eResource()
 //								.getURIFragment((EObject) accessedObject);
 //						vt.setUri(accessedObjectUri);
 //					} else {
-//						vt.setUri(path.iterator().next());
+//						vt.setUri(target.iterator().next());
 //					}
 
 					// generate the content of each view tree
@@ -581,7 +582,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //				"<span id='%s' onclick=\"Picto.draw('%s', '%s')\">%s</span>" //
 //				, filename + "#" + viewTree.getPathString() //
 //				, filename + "#" + viewTree.getPathString() //
-//				, "/picto?file=" + filename + "&path=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
+//				, "/picto?file=" + filename + "&target=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
 //				, viewTree.getName());
 		jsTreeNode.setText(text);
 		jsTreeNode.setPath(viewTree.getPathString());

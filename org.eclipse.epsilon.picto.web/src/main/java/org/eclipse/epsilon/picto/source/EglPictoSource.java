@@ -164,7 +164,7 @@ public abstract class EglPictoSource implements PictoSource {
 							}
 						}
 						
-						if (customView.getPath() != null) customView.getParameters().add(createParameter("path", customView.getPath()));
+						if (customView.getPath() != null) customView.getParameters().add(createParameter("target", customView.getPath()));
 						if (customView.getIcon() != null) customView.getParameters().add(createParameter("icon", customView.getIcon()));
 						if (customView.getFormat() != null) customView.getParameters().add(createParameter("format", customView.getFormat()));
 						customView.getParameters().add(createParameter("patches", customView.getPatches()));
@@ -221,7 +221,7 @@ public abstract class EglPictoSource implements PictoSource {
 								format = varValue + "";
 								break;
 							}
-							case "path": {
+							case "target": {
 								if (!(varValue instanceof Collection)) {
 									(path = (Collection<String>) (varValue = new ArrayList<>(1)))
 										.add(Objects.toString(varValue));

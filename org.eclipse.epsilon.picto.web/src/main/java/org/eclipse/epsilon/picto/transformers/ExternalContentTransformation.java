@@ -71,7 +71,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	 * 
 	 * @param extension The file extension.
 	 * @param contents The initial contents of the file. May be null.
-	 * @return The absolute path of the temporary file.
+	 * @return The absolute target of the temporary file.
 	 * @throws IOException If the temp file couldn't be created.
 	 */
 	public static Path createTempFile(String extension, byte... contents) throws IOException {
@@ -83,7 +83,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	/**
 	 * 
 	 * @param program The Node.js program name.
-	 * @return The absolute path of the command needed to invoke the program.
+	 * @return The absolute target of the command needed to invoke the program.
 	 */
 	public static String resolveNodeProgram(String program) {
 		return Paths.get(System.getProperty("user.home"))
