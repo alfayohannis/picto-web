@@ -77,7 +77,7 @@
 				}
 			 } else {
 				if (not package.isDefined()) { %]
-					<img src="../img/[%=metaModelName%].png"
+					<img src="img/[%=metaModelName%].png"
 					   alt="Overview of the [%=metaModelName%] metamodel"/>
 [%
 				}

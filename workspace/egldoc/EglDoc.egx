@@ -1,4 +1,4 @@
-rule Diagram transform package : ecore::EPackage {
+rule Diagram transform package : EPackage {
     parameters : Map { 
         "path" = List{package.name},
         "format" = "graphviz-dot",
@@ -11,7 +11,7 @@ rule Diagram transform package : ecore::EPackage {
     target: package.name + "/" + package.name + ".dot"
 }
 
-rule Packages transform package : ecore::EPackage {
+rule Packages transform package : EPackage {
     parameters : Map { 
         "path" = List{package.name},
         "icon" = "diagram-ff0000",
@@ -24,7 +24,7 @@ rule Packages transform package : ecore::EPackage {
     target: package.name + "/" + package.name + "-package-index.html"
 }
 
-rule DataTypes transform dataType : ecore::EEnum {
+rule DataTypes transform dataType : EEnum {
     parameters : Map { 
         "path" = List{dataType.ePackage.name, dataType.name},
         "icon" = "diagram-ff0000",
@@ -38,7 +38,7 @@ rule DataTypes transform dataType : ecore::EEnum {
     target: dataType.ePackage.name + "/" + dataType.ePackage.name + "-"+ dataType.name + ".html"
 }
 
-rule Classes transform classifier : ecore::EClass {
+rule Classes transform classifier : EClass {
     parameters : Map { 
         "path" = List{classifier.ePackage.name, classifier.name},
         "icon" = "diagram-ff0000",

@@ -82,7 +82,7 @@
 				<tr class="inheritedFeature">
 					<td class="inheritedFrom">
 						<a href="[%=attribute.eContainingClass.filename()%]">
-							<img src="../img/arrow_up.png" alt="Inherited from [%=attribute.eContainingClass.name%]" />
+							<img src="img/arrow_up.png" alt="Inherited from [%=attribute.eContainingClass.name%]" />
 						</a>
 					</td>
 			[% } %]		
@@ -142,7 +142,7 @@
 				<tr class="inheritedFeature">
 					<td class="inheritedFrom">
 						<a href="[%=op.eContainingClass.filename()%]">
-							<img src="../img/arrow_up.png" alt="Inherited from [%=op.eContainingClass.name%]" />
+							<img src="img/arrow_up.png" alt="Inherited from [%=op.eContainingClass.name%]" />
 						</a>
 					</td>
 			[% } %]	
@@ -196,7 +196,7 @@
 				<tr class="inheritedFeature">
 					<td class="inheritedFrom">
 						<a href="[%=ref.eContainingClass.filename()%]">
-							<img src="../img/arrow_up.png" alt="Inherited from [%=ref.eContainingClass.name%]" />
+							<img src="img/arrow_up.png" alt="Inherited from [%=ref.eContainingClass.name%]" />
 						</a>
 					</td>
 			[% } %]	

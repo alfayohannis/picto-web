@@ -5,4 +5,4 @@
 		<parameter name="metamodelUri" value="http://www.eclipse.org/emf/2002/Ecore"/>
 		<parameter name="modelFile" file="egldoc/Families.ecore"/>
 	</model>                                 
-</picto>
+</picto>        

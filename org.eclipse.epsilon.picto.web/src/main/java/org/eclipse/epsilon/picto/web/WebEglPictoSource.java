@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.internal.registry.ConfigurationElementHandle;
@@ -226,10 +227,10 @@ public class WebEglPictoSource extends EglPictoSource {
 				model = loadModel(pictoModel, modelFile);
 				if (model != null)
 					models.add(model);
-				List<org.eclipse.emf.common.util.URI> metamodels = ((EmfModel) model).getMetamodelFileUris();
-				((EmfModel) model).setMetamodelUri("http://www.eclipse.org/emf/2002/Ecore");
-				((EmfModel) model).setMetamodelFileBased(false);
-				model.load();
+//				List<org.eclipse.emf.common.util.URI> metamodels = ((EmfModel) model).getMetamodelFileUris();
+//				((EmfModel) model).setMetamodelUri("http://www.eclipse.org/emf/2002/Ecore");
+////				((EmfModel) model).setMetamodelFileBased(false);
+//				model.load();
 			}
 
 			context.getModelRepository().addModels(models);
@@ -248,7 +249,6 @@ public class WebEglPictoSource extends EglPictoSource {
 //						System.console();
 //					}
 //				}
-				
 
 				/** PROPERTY ACCESS RECORDS **/
 				// start recording for property access
@@ -284,7 +284,7 @@ public class WebEglPictoSource extends EglPictoSource {
 						}
 
 						if (customView.getPath() != null)
-							customView.getParameters().add(createParameter("target", customView.getPath()));
+							customView.getParameters().add(createParameter("path", customView.getPath()));
 						if (customView.getIcon() != null)
 							customView.getParameters().add(createParameter("icon", customView.getIcon()));
 						if (customView.getFormat() != null)
@@ -343,7 +343,7 @@ public class WebEglPictoSource extends EglPictoSource {
 							format = varValue + "";
 							break;
 						}
-						case "target": {
+						case "path": {
 							if (!(varValue instanceof Collection)) {
 								(path = (Collection<String>) (varValue = new ArrayList<>(1)))
 										.add(Objects.toString(varValue));
@@ -681,8 +681,14 @@ public class WebEglPictoSource extends EglPictoSource {
 			if (metamodelFile.exists()) {
 				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
 						.createFileURI(metamodelFile.getAbsolutePath());
-				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+				List<EPackage> ePackage = EmfUtil.register(uri, EPackage.Registry.INSTANCE);
+				ePackages.addAll(ePackage);
 			} else if ("http://www.eclipse.org/emf/2002/Ecore".equals(metamodelName)) {
+
+				if (EPackage.Registry.INSTANCE.getEPackage(EcorePackage.eNS_URI) == null) {
+					EPackage.Registry.INSTANCE.put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+				}
+
 //				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
 //						.createFileURI("../workspace/egldoc/Ecore.ecore");
 //				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
@@ -690,7 +696,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				EPackage ePackage = EcorePackage.eINSTANCE.eClass().getEPackage();
 //				String x = ePackage.getNsURI();
 //				org.eclipse.emf.common.util.URI uri2 = org.eclipse.emf.common.util.URI.createURI(x);
-//				EmfUtil.register(uri2, EPackage.Registry.INSTANCE);
+//				EmfUtil.register(uri2, EPackage.Registry.INSTANCE, true);
 				ePackages.add(EcorePackage.eINSTANCE.eClass().getEPackage());
 				System.console();
 			}
@@ -700,8 +706,14 @@ public class WebEglPictoSource extends EglPictoSource {
 
 	public Resource getResource(File modelFile) {
 		ResourceSet resourceSet = new ResourceSetImpl();
+
+		if (modelFile.getName().endsWith(".ecore")) {
+				resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+		}
+
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+				new EcoreResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
 		Resource resource = resourceSet
