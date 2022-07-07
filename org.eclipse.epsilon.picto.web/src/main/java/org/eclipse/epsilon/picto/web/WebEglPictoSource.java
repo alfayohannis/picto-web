@@ -20,12 +20,14 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
+//import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
@@ -35,7 +37,7 @@ import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
+//import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
@@ -144,8 +146,10 @@ public class WebEglPictoSource extends EglPictoSource {
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith(".egx")) {
 				String modelFileName = modifiedFile.getName().replace(".egx", ".model");
-				this.modelFile = new File(modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName);
-				this.pictoFile = new File(modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName + ".picto");
+				this.modelFile = new File(
+						modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName);
+				this.pictoFile = new File(
+						modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName + ".picto");
 				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
@@ -156,7 +160,7 @@ public class WebEglPictoSource extends EglPictoSource {
 			} else if (modifiedFile.getAbsolutePath().endsWith("-standalone.picto")) {
 				this.pictoFile = modifiedFile;
 				this.modelFile = modifiedFile;
-				loadMetamodel(this.pictoFile.getName().replace("-standalone.picto", ""));
+//				loadMetamodel(this.pictoFile.getName().replace("-standalone.picto", ""));
 			}
 		} catch (Exception ex) {
 			throw new ResourceLoadingException(ex);
@@ -613,13 +617,14 @@ public class WebEglPictoSource extends EglPictoSource {
 
 	protected IModel loadModel(Model model, File baseFile) throws Exception {
 //		IModel m = null;
-//		if ("EMF".equals(model.getType())) {
+		if ("EMF".equals(model.getType())) {
 //			m = new EmfModel();
-//			String metamodelName = (String) model.getParameters().stream()
-//					.filter(p -> EmfModel.PROPERTY_METAMODEL_URI.equals(p.getName())).findFirst().orElse(null)
-//					.getValue();
-//			loadMetamodel(metamodelName);
-//		} else {
+			String metamodelName = (String) model.getParameters().stream()
+					.filter(p -> EmfModel.PROPERTY_METAMODEL_URI.equals(p.getName())).findFirst().orElse(null)
+					.getValue();
+			loadMetamodel(metamodelName);
+		}
+//		else {
 //			m = ModelTypeExtension.forType(model.getType()).createModel();
 //		}
 //		m.setName(model.getName());
@@ -645,7 +650,8 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	protected IModel loadModel(Model model, String code) throws Exception {
-		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+//		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+		IModel m = new EmfModel();
 		m.setName(model.getName());
 		m.setReadOnLoad(true);
 		m.setStoredOnDisposal(false);
@@ -665,16 +671,32 @@ public class WebEglPictoSource extends EglPictoSource {
 
 	public List<EPackage> loadMetamodel(String metamodelName) throws Exception {
 		if (!ePackages.stream().anyMatch(p -> p.getName().equals(metamodelName))) {
-			String metamodelFile = this.pictoFile.getParentFile().getAbsolutePath() + File.separator + metamodelName
-					+ ".ecore";
-			org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createFileURI(metamodelFile);
-			ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+			File metamodelFile = new File(
+					this.pictoFile.getParentFile().getAbsolutePath() + File.separator + metamodelName + ".ecore");
+			if (metamodelFile.exists()) {
+				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+						.createFileURI(metamodelFile.getAbsolutePath());
+				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+			} else if ("http://www.eclipse.org/emf/2002/Ecore".equals(metamodelName)) {
+				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+						.createFileURI("../workspace/egldoc/Ecore.ecore");
+				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+//				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createURI(metamodelName);
+//				EPackage ePackage = EcorePackage.eINSTANCE.eClass().getEPackage();
+//				String x = ePackage.getNsURI();
+//				org.eclipse.emf.common.util.URI uri2 = org.eclipse.emf.common.util.URI.createURI(x);
+//				EmfUtil.register(uri2, EPackage.Registry.INSTANCE);
+//				ePackages.add(EcorePackage.eINSTANCE.eClass().getEPackage());
+				System.console();
+			}
 		}
 		return ePackages;
 	}
 
 	public Resource getResource(File modelFile) {
 		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
 		Resource resource = resourceSet

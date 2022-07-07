@@ -12,7 +12,7 @@ package org.eclipse.epsilon.picto.transformers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.epsilon.common.dt.util.LogUtil;
+//import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.egl.patch.Line;
 import org.eclipse.epsilon.egl.patch.TextBlock;
 import org.eclipse.epsilon.eol.EolModule;
@@ -76,7 +76,7 @@ public class PatchContentTransformer implements ViewContentTransformer {
 			return (boolean) module.execute();
 		}
 		catch (Exception ex) {
-			LogUtil.log(ex);
+//			LogUtil.log(ex);
 			return false;
 		}
 	}

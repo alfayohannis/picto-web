@@ -92,6 +92,12 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.eclipse.emf/org.eclipse.emf.ecore -->
+    <dependency>
+      <groupId>org.eclipse.emf</groupId>
+      <artifactId>org.eclipse.emf.ecore</artifactId>
+      <version>2.26.0</version>
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.flexmi -->
     <dependency>
       <groupId>org.eclipse.epsilon</groupId>
@@ -105,11 +111,21 @@
       <version>2.4.0</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.egl.engine -->
-    <!--<dependency>
+    <dependency>
+      <groupId>org.eclipse.epsilon</groupId>
+      <artifactId>org.eclipse.epsilon.emc.emf</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.epsilon</groupId>
+      <artifactId>org.eclipse.epsilon.eol.engine</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.epsilon</groupId>
       <artifactId>org.eclipse.epsilon.egl.engine</artifactId>
       <version>2.4.0</version>
-    </dependency>-->
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.swt -->
     <dependency>
       <groupId>org.eclipse.platform</groupId>
@@ -178,7 +194,7 @@
 
 
     <!-- FROM LOCAL REPOSITORY -->
-    <dependency>
+    <!--<dependency>
       <groupId>org.eclipse.epsilon</groupId>
       <artifactId>org.eclipse.epsilon.common.dt</artifactId>
       <version>2.5.0</version>
@@ -187,7 +203,7 @@
       <groupId>org.eclipse.epsilon</groupId>
       <artifactId>org.eclipse.epsilon.eol.dt</artifactId>
       <version>2.5.0</version>
-    </dependency>
+    </dependency>-->
     <!--<dependency>
       <groupId>org.eclipse.ui</groupId>
       <artifactId>org.eclipse.ui.workbench</artifactId>
@@ -214,7 +230,7 @@
             </exclude>
           </excludes>
 
-          <!-- PICTO -->
+          <!-- PICTO WEB -->
           <finalName>picto</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <outputDirectory>./</outputDirectory>
@@ -227,7 +243,7 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
-          <!-- PICTO -->
+          <!-- PICTO WEB -->
 
         </configuration>
       </plugin>

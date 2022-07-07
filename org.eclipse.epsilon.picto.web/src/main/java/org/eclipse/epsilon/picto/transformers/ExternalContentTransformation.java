@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
+//import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
 import org.eclipse.epsilon.common.util.FileUtil;
 import org.eclipse.epsilon.common.util.OperatingSystem;
 import org.eclipse.epsilon.common.util.StringUtil;

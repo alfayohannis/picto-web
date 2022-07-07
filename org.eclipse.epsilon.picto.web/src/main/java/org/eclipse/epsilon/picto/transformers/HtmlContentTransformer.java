@@ -52,7 +52,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 			new MermaidRendererHeadAppender(),
 			new MetroHeadAppender()
 		));
-		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
+//		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
 	}
 	
 	protected XmlHelper xmlHelper = new XmlHelper();

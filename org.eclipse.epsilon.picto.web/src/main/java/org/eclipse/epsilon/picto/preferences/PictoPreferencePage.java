@@ -11,7 +11,6 @@ package org.eclipse.epsilon.picto.preferences;
 
 import java.util.ArrayList;
 
-import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
 import org.eclipse.epsilon.picto.dummy.IWorkbench;
 import org.eclipse.epsilon.picto.dummy.IWorkbenchPreferencePage;
 import org.eclipse.jface.preference.BooleanFieldEditor;

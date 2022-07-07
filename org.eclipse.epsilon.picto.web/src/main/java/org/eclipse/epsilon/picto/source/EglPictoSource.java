@@ -24,16 +24,17 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.epsilon.common.dt.console.EpsilonConsole;
-import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
-import org.eclipse.epsilon.common.dt.util.LogUtil;
+//import org.eclipse.epsilon.common.dt.console.EpsilonConsole;
+//import org.eclipse.epsilon.common.dt.launching.extensions.ModelTypeExtension;
+//import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
+import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
+//import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
@@ -109,7 +110,7 @@ public abstract class EglPictoSource implements PictoSource {
 			}
 			
 			IEolContext context = module.getContext();
-			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
+//			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
 			
 			FrameStack fs = context.getFrameStack();
 			for (Parameter customParameter : renderingMetadata.getParameters()) {
@@ -126,9 +127,9 @@ public abstract class EglPictoSource implements PictoSource {
 				module.parse("");
 			}	
 			
-			context.setOutputStream(EpsilonConsole.getInstance().getDebugStream());
-			context.setErrorStream(EpsilonConsole.getInstance().getErrorStream());
-			context.setWarningStream(EpsilonConsole.getInstance().getWarningStream());		
+//			context.setOutputStream(EpsilonConsole.getInstance().getDebugStream());
+//			context.setErrorStream(EpsilonConsole.getInstance().getErrorStream());
+//			context.setWarningStream(EpsilonConsole.getInstance().getWarningStream());		
 			if (model != null) context.getModelRepository().addModel(model);
 			
 			for (Model pictoModel : renderingMetadata.getModels()) {
@@ -385,14 +386,15 @@ public abstract class EglPictoSource implements PictoSource {
 				model.dispose();
 			}
 			catch (Exception ex) {
-				LogUtil.log(ex);
+//				LogUtil.log(ex);
 			}
 		}
 		models.clear();
 	}
 	
 	protected IModel loadModel(Model model, File baseFile) throws Exception {
-		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+//		IModel m = ModelTypeExtension.forType(model.getType()).createModel();
+		IModel m = new EmfModel();
 		m.setName(model.getName());
 		m.setReadOnLoad(true);
 		m.setStoredOnDisposal(false);
