@@ -32,6 +32,7 @@ import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
+import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
@@ -46,7 +47,6 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
-import org.eclipse.epsilon.incrementality.GenerationRulePropertyAccess;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoView;
@@ -226,6 +226,10 @@ public class WebEglPictoSource extends EglPictoSource {
 				model = loadModel(pictoModel, modelFile);
 				if (model != null)
 					models.add(model);
+				List<org.eclipse.emf.common.util.URI> metamodels = ((EmfModel) model).getMetamodelFileUris();
+				((EmfModel) model).setMetamodelUri("http://www.eclipse.org/emf/2002/Ecore");
+				((EmfModel) model).setMetamodelFileBased(false);
+				model.load();
 			}
 
 			context.getModelRepository().addModels(models);
@@ -244,6 +248,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //						System.console();
 //					}
 //				}
+				
 
 				/** PROPERTY ACCESS RECORDS **/
 				// start recording for property access
@@ -678,15 +683,15 @@ public class WebEglPictoSource extends EglPictoSource {
 						.createFileURI(metamodelFile.getAbsolutePath());
 				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
 			} else if ("http://www.eclipse.org/emf/2002/Ecore".equals(metamodelName)) {
-				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
-						.createFileURI("../workspace/egldoc/Ecore.ecore");
-				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
+//				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+//						.createFileURI("../workspace/egldoc/Ecore.ecore");
+//				ePackages.addAll(EmfUtil.register(uri, EPackage.Registry.INSTANCE));
 //				org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createURI(metamodelName);
-//				EPackage ePackage = EcorePackage.eINSTANCE.eClass().getEPackage();
+				EPackage ePackage = EcorePackage.eINSTANCE.eClass().getEPackage();
 //				String x = ePackage.getNsURI();
 //				org.eclipse.emf.common.util.URI uri2 = org.eclipse.emf.common.util.URI.createURI(x);
 //				EmfUtil.register(uri2, EPackage.Registry.INSTANCE);
-//				ePackages.add(EcorePackage.eINSTANCE.eClass().getEPackage());
+				ePackages.add(EcorePackage.eINSTANCE.eClass().getEPackage());
 				System.console();
 			}
 		}

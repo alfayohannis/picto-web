@@ -9,7 +9,6 @@ import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessExecutionListener;
-import org.eclipse.epsilon.incrementality.GenerationRulePropertyAccessRecorder;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRule;
 
