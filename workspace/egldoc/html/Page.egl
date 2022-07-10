@@ -1,68 +1,45 @@
-[%	
-	var headerTemplate : Template = TemplateFactory.load("html/Header.egl");
-	var footerTemplate : Template = TemplateFactory.load("html/Footer.egl");
+[%  
+    var headerTemplate : Template = TemplateFactory.load("html/Header.egl");
+    var footerTemplate : Template = TemplateFactory.load("html/Footer.egl");
 
-	var packagesTemplate    : Template = 
-		TemplateFactory.load("html/Packages.egl");	
-	var classifiersTemplate : Template = 
-		TemplateFactory.load("html/Classifiers.egl");
-	var classTemplate       : Template = 
-		TemplateFactory.load("html/Class.egl");
-	var dataTypeTemplate    : Template = 
-		TemplateFactory.load("html/DataType.egl");
-	
-	var title : String = metaModelName + " Meta-Model";
-	
-	if (classifier.isDefined()) {
-		title = package.name + "." + classifier.name + " - " + title;	
-	
-	} else {
-		if (package.isDefined()) {
-			title = package.name + " Package - " + title;
-		}
-	}
-	
-	headerTemplate.populate("title", title);
-	
-	classifiersTemplate.populate("package", package);
-	
-	classTemplate.populate("class", classifier);
+    var packagesTemplate    : Template = 
+        TemplateFactory.load("html/Packages.egl");  
+    var classifiersTemplate : Template = 
+        TemplateFactory.load("html/Classifiers.egl");
+    var classTemplate       : Template = 
+        TemplateFactory.load("html/Class.egl");
+    var dataTypeTemplate    : Template = 
+        TemplateFactory.load("html/DataType.egl");
+    
+    var title : String = metaModelName + " Meta-Model";
+    
+    if (classifier.isDefined()) {
+        title = package.name + "." + classifier.name + " - " + title;   
+    
+    } else {
+        if (package.isDefined()) {
+            title = package.name + " Package - " + title;
+        }
+    }
+    
+    headerTemplate.populate("title", title);
+    
+    classifiersTemplate.populate("package", package);
+    
+    classTemplate.populate("class", classifier);
 %]
-[%=headerTemplate.process()%]
-<div id="container">
-	<div id="header">
-		<h1><a href="index.html">[%=metaModelName%] Meta-Model</a></h1>
-	</div>
-
-	<div id="wrapper">
-		<div id="sidebar">
-			[% if (classifier.isDefined()) { %]
-				<div id="controls">
-					<h1>Controls</h1>
-					<form action="noAction()">
-						<fieldset>
-							<input type="checkbox" id="inherited" 
-								name="inherited" 
-								onclick="saveShowInherited();" />
-							<label for="inherited">
-								Show inherited features
-							</label>
-						</fieldset>
-					</form>
-				</div>
-			[% } %]
-			
-			<div id="packages">
-				[%=packagesTemplate.process()%]
-			</div>
-
-			<div id="classifiers">
-				[% if (package.isDefined()) { %]
-					[%=classifiersTemplate.process()%]
-				[% } %]
-			</div>
-		</div>
-			
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>families.Band - families Meta-Model</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <link title="default" rel="stylesheet" type="text/css" media="screen, projection" href="css/screen.css"></link>
+        <script type="text/javascript" src="scripts/controls.js"></script>
+    </head>
+    <body>         	
 		<div id="content">
 			[% if (classifier.isDefined()) {
 				if (classifier.isKindOf(EDataType)) {
@@ -83,6 +60,6 @@
 				}
 			}
 %]
-				</div>
-			</div>
-[%=footerTemplate.process()%]
+		</div>
+    </body>
+</html>

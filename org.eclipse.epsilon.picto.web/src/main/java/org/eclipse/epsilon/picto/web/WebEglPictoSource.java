@@ -455,6 +455,7 @@ public class WebEglPictoSource extends EglPictoSource {
 					PictoResponse pictoResponse = new PictoResponse();
 					pictoResponse.setFilename(filename);
 					pictoResponse.setPath(pathString);
+					System.out.println(pathString);
 					pictoResponse.setType(vt.getContent().getFormat());
 					pictoResponse.setContent(vc.getText());
 					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()

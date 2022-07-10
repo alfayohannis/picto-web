@@ -5,28 +5,21 @@ html, body, div, h1, h2, h3, h4, ul, li, p, table, td, tr, th {
   font-size: small;
   font-weight: normal;
   font-family: Verdana, Arial, sans-serif;
+  text-align: left;
 }
 
-body {
-  background-color: #ffffff;
-}
 
 h1 a:link, h1 a:visited {
-  color: white;
+  color: black;
   border: 0;
 }
 
-/*div {
-  padding: 0.5em 1em;
-}
-*/
 fieldset {
   border: 0;
 }
 
 a:link, a:visited {
   text-decoration: none;
-  /*border-bottom: 1px dotted #596C85;*/
 }
 
 a:hover, a:active {
@@ -52,25 +45,25 @@ td.inheritedFrom a img {
 #container {
   padding: 0;
   width: 100%;
+  color: black;
 }
 
 #header {
   padding: 1em 1em 0.5em;
   border-bottom: 10px solid #841818;
   background-color: #B02B2C;
-  color: #ffffff;
 }
 
 #header h1 {
   font-family: Georgia,Serif;
   font-size: xx-large;
+  color: black;
 }
 
 #wrapper {
   padding: 0;
   overflow: hidden;
   width: 100%;
-  background-color: #FFFFFF;
 }
 
 #sidebar {
@@ -99,11 +92,11 @@ td.inheritedFrom a img {
 
 #sidebar h1 {
   font-size: large;
+  color: black;
 }
 
 #content {
-  border-left: 22em solid #E4E4E4;
-  background-color: #FFFFFF;
+  padding: 1em;
 }
 
 #content h1 {
@@ -112,6 +105,7 @@ td.inheritedFrom a img {
   font-weight: bold;
   padding-top: 0.25em;
   padding-bottom: .75em;
+  color: black;
 }
 
 #content h2 {
@@ -119,10 +113,18 @@ td.inheritedFrom a img {
   font-size: xx-large;
   font-weight: bold;
   padding-bottom: 0.25em;
+  color: black;
 }
 
 #content h3 {
   font-weight: bold;
+  color: black;
+}
+
+#content h4 {
+  padding: 0.75em 0;
+  font-weight: bold;
+  color: black;
 }
 
 #content ul {
@@ -142,10 +144,7 @@ td.inheritedFrom a img {
   padding: 0 0.5em 0.5em;
 }
 
-#content h4 {
-  padding: 0.75em 0;
-  font-weight: bold;
-}
+
 
 #content table {
   border-right: 1px solid black;
@@ -178,7 +177,6 @@ div#controls {
   padding: .5em 0;
   clear: both;
   background-color: #841818;
-  color: #FFFFFF;
 }
 
 #footer h1, #footer p {
