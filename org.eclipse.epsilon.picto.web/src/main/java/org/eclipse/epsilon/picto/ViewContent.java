@@ -42,7 +42,7 @@ public class ViewContent {
 		if (viewContentTransformers == null) {
 			viewContentTransformers = new ArrayList<>();
 			viewContentTransformers.add(new PatchContentTransformer());
-			viewContentTransformers.addAll(new ViewContentTransformerExtensionPointManager().getExtensions());
+//			viewContentTransformers.addAll(new ViewContentTransformerExtensionPointManager().getExtensions());
 		}
 		return viewContentTransformers;
 	}

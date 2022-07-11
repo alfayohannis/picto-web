@@ -1,7 +1,7 @@
-rule Diagram transform package : ecore::EPackage {
+rule Diagram transform package : EPackage {
     parameters : Map { 
-        "format" = "graphviz",
         "path" = List{package.name},
+        "format" = "graphviz-dot",
         "icon" = "diagram-ff0000",
        
         "metaModelName" = package.name,
@@ -11,12 +11,12 @@ rule Diagram transform package : ecore::EPackage {
     target: package.name + "/" + package.name + ".dot"
 }
 
-rule Packages transform package : ecore::EPackage {
+rule Packages transform package : EPackage {
     parameters : Map { 
-        "format" = "html",
         "path" = List{package.name},
         "icon" = "diagram-ff0000",
-       
+        "format" = "html",
+        
         "metaModelName" = package.name,
         "classifier" = null
     }
@@ -24,11 +24,11 @@ rule Packages transform package : ecore::EPackage {
     target: package.name + "/" + package.name + "-package-index.html"
 }
 
-rule DataTypes transform dataType : ecore::EEnum {
+rule DataTypes transform dataType : EEnum {
     parameters : Map { 
-        "format" = "html",
         "path" = List{dataType.ePackage.name, dataType.name},
         "icon" = "diagram-ff0000",
+        "format" = "html",
        
         "package" = dataType.ePackage,
         "metaModelName" = dataType.ePackage.name,
@@ -38,11 +38,11 @@ rule DataTypes transform dataType : ecore::EEnum {
     target: dataType.ePackage.name + "/" + dataType.ePackage.name + "-"+ dataType.name + ".html"
 }
 
-rule Classes transform classifier : ecore::EClass {
+rule Classes transform classifier : EClass {
     parameters : Map { 
-        "format" = "html",
         "path" = List{classifier.ePackage.name, classifier.name},
         "icon" = "diagram-ff0000",
+        "format" = "html",
        
         "package" = classifier.ePackage,
         "metaModelName" = classifier.ePackage.name

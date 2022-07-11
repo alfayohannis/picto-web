@@ -115,10 +115,13 @@ Picto.render = function(view) {
     if (text.trim() == "") {
       text = "<body></body>";
     }
-    var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(text, "text/xml");
-    fragment = xmlDoc.getElementsByTagName("body")[0];
-    container.innerHTML = fragment.innerHTML;
+    console.log(text);
+    container.innerHTML = text;
+    //var parser = new DOMParser();
+    //var xmlDoc = parser.parseFromString(text, "text/xml");
+    //fragment = xmlDoc.innerHTML;
+    //fragment = xmlDoc.getElementsByTagName("body")[0];
+    //container.innerHTML = fragment.innerHTML;
   } else if (view.type == 'markdown') {
     var text = view.content;
     console.log(text);
